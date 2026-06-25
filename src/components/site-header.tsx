@@ -9,7 +9,9 @@ import {
   LogOut,
   HelpCircle,
   Settings,
+  UserCircle2,
   KeyRound,
+  User,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { logout } from "@/app/login/actions";
@@ -19,6 +21,9 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import type { Profile } from "@/lib/types";
@@ -131,18 +136,32 @@ export function SiteHeader({ profile }: { profile: Profile }) {
                 <DropdownMenuSeparator />
               </div>
 
-              <DropdownMenuItem asChild className="cursor-pointer gap-2">
-                <Link href="/settings" className="flex items-center gap-2">
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger className="cursor-pointer gap-2">
                   <Settings className="size-4" />
                   Configurações
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild className="cursor-pointer gap-2">
-                <Link href="/settings?section=senha" className="flex items-center gap-2">
-                  <KeyRound className="size-4" />
-                  Trocar senha
-                </Link>
-              </DropdownMenuItem>
+                </DropdownMenuSubTrigger>
+                <DropdownMenuSubContent>
+                  <DropdownMenuItem asChild className="cursor-pointer gap-2">
+                    <Link href="/settings?section=perfil">
+                      <UserCircle2 className="size-4" />
+                      Foto de perfil
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild className="cursor-pointer gap-2">
+                    <Link href="/settings?section=senha">
+                      <KeyRound className="size-4" />
+                      Trocar senha
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild className="cursor-pointer gap-2">
+                    <Link href="/settings?section=conta">
+                      <User className="size-4" />
+                      Minha conta
+                    </Link>
+                  </DropdownMenuItem>
+                </DropdownMenuSubContent>
+              </DropdownMenuSub>
               <DropdownMenuItem className="cursor-pointer gap-2">
                 <HelpCircle className="size-4" />
                 Ajuda

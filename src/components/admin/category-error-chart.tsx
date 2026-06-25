@@ -8,6 +8,7 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
+  LabelList,
 } from "recharts";
 
 export interface ChartDataPoint {
@@ -26,7 +27,7 @@ export function CategoryErrorChart({ data }: { data: ChartDataPoint[] }) {
 
   return (
     <ResponsiveContainer width="100%" height={220}>
-      <BarChart data={data} margin={{ top: 4, right: 8, left: -24, bottom: 4 }}>
+      <BarChart data={data} margin={{ top: 20, right: 8, left: -24, bottom: 4 }}>
         <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
         <XAxis
           dataKey="name"
@@ -53,7 +54,13 @@ export function CategoryErrorChart({ data }: { data: ChartDataPoint[] }) {
           }}
           formatter={(value) => [String(value), "Erros"]}
         />
-        <Bar dataKey="erros" fill="#86efac" radius={[4, 4, 0, 0]} />
+        <Bar dataKey="erros" fill="#86efac" radius={[4, 4, 0, 0]}>
+          <LabelList
+            dataKey="erros"
+            position="top"
+            style={{ fontSize: 11, fill: "#64748b", fontWeight: 600 }}
+          />
+        </Bar>
       </BarChart>
     </ResponsiveContainer>
   );
