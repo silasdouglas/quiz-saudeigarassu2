@@ -4,41 +4,47 @@ import { requireUser } from "@/lib/dal";
 import { createClient } from "@/lib/supabase/server";
 
 const MOCK_RANKING = [
-  { name: "Maria Santos", score: 145 },
-  { name: "João Silva", score: 132 },
-  { name: "Ana Oliveira", score: 128 },
-  { name: "Carlos Lima", score: 115 },
-  { name: "Fernanda Costa", score: 98 },
+  { name: "Maria Santos", score: 145, avatar_url: null },
+  { name: "João Silva", score: 132, avatar_url: null },
+  { name: "Ana Oliveira", score: 128, avatar_url: null },
+  { name: "Carlos Lima", score: 115, avatar_url: null },
+  { name: "Fernanda Costa", score: 98, avatar_url: null },
 ];
 
 const podiumConfig = {
   1: {
     order: 2,
-    stageH: "h-28",
-    stageBg: "bg-amber-400",
+    stageH: "h-24",
+    stageGradient: "bg-gradient-to-b from-amber-300 to-yellow-500",
     stageText: "text-amber-950",
+    medalBg: "bg-amber-400",
+    medalText: "text-amber-950",
     avatarRing: "ring-2 ring-amber-400 ring-offset-2",
-    avatarSize: "size-16",
+    avatarSize: "size-14",
     avatarText: "text-base",
     labelColor: "text-amber-600",
   },
   2: {
     order: 1,
-    stageH: "h-20",
-    stageBg: "bg-slate-300",
-    stageText: "text-slate-600",
+    stageH: "h-16",
+    stageGradient: "bg-gradient-to-b from-slate-200 to-slate-400",
+    stageText: "text-slate-700",
+    medalBg: "bg-slate-300",
+    medalText: "text-slate-700",
     avatarRing: "",
-    avatarSize: "size-12",
+    avatarSize: "size-10",
     avatarText: "text-sm",
     labelColor: "text-slate-500",
   },
   3: {
     order: 3,
-    stageH: "h-14",
-    stageBg: "bg-orange-300",
+    stageH: "h-12",
+    stageGradient: "bg-gradient-to-b from-orange-200 to-orange-400",
     stageText: "text-orange-900",
+    medalBg: "bg-orange-300",
+    medalText: "text-orange-900",
     avatarRing: "",
-    avatarSize: "size-12",
+    avatarSize: "size-10",
     avatarText: "text-sm",
     labelColor: "text-orange-500",
   },
@@ -74,7 +80,7 @@ export default async function HomePage() {
   return (
     <div className="flex-1 bg-gradient-to-b from-primary/5 via-background to-background">
       {/* Hero */}
-      <div className="mx-auto max-w-xl px-4 pt-10 pb-2 text-center sm:pt-12">
+      <div className="mx-auto max-w-xl px-4 pt-10 pb-4 text-center sm:pt-12">
         <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground mb-3">
           <Clock3 className="size-3.5" />
           <span>
@@ -95,8 +101,8 @@ export default async function HomePage() {
       </div>
 
       {/* Podium */}
-      <div className="mx-auto max-w-xl px-4 pt-10 pb-4">
-        <div className="mb-6 flex items-center justify-between">
+      <div className="mx-auto max-w-sm px-4 pt-6 pb-4">
+        <div className="mb-5 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Trophy className="size-4 text-amber-500" />
             <h2 className="font-semibold">Ranking da semana</h2>
@@ -111,7 +117,7 @@ export default async function HomePage() {
         </div>
 
         {/* Podium columns — ordered [2, 1, 3] visually */}
-        <div className="flex items-end justify-center gap-3">
+        <div className="flex items-end justify-center gap-2">
           {([2, 1, 3] as const).map((pos) => {
             const entry = top3[pos - 1];
             const cfg = podiumConfig[pos];
@@ -123,11 +129,26 @@ export default async function HomePage() {
               >
                 {/* Info above stage */}
                 <div className="mb-2 flex flex-col items-center gap-1">
+                  {/* Medal badge */}
                   <div
-                    className={`flex ${cfg.avatarSize} shrink-0 items-center justify-center rounded-full bg-primary/10 font-bold text-primary ${cfg.avatarText} ${cfg.avatarRing}`}
+                    className={`mb-1 flex size-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold shadow-sm ${cfg.medalBg} ${cfg.medalText}`}
                   >
-                    {entry.name.charAt(0)}
+                    {pos}
                   </div>
+                  {/* Avatar */}
+                  {entry.avatar_url ? (
+                    <img
+                      src={entry.avatar_url}
+                      alt={entry.name}
+                      className={`shrink-0 rounded-full object-cover ${cfg.avatarSize} ${cfg.avatarRing}`}
+                    />
+                  ) : (
+                    <div
+                      className={`flex shrink-0 items-center justify-center rounded-full bg-primary/10 font-bold text-primary ${cfg.avatarSize} ${cfg.avatarText} ${cfg.avatarRing}`}
+                    >
+                      {entry.name.charAt(0)}
+                    </div>
+                  )}
                   <p className="max-w-full truncate text-center text-xs font-semibold leading-tight">
                     {entry.name.split(" ")[0]}
                   </p>
@@ -135,9 +156,9 @@ export default async function HomePage() {
                     {entry.score} pts
                   </p>
                 </div>
-                {/* Stage */}
+                {/* Stage with gradient */}
                 <div
-                  className={`flex w-full items-start justify-center rounded-t-xl pt-2 font-bold ${cfg.stageH} ${cfg.stageBg} ${cfg.stageText}`}
+                  className={`flex w-full items-start justify-center rounded-t-xl pt-2 font-bold shadow-inner ${cfg.stageH} ${cfg.stageGradient} ${cfg.stageText}`}
                 >
                   {pos}
                 </div>
@@ -155,14 +176,22 @@ export default async function HomePage() {
                 return (
                   <li
                     key={entry.name}
-                    className="flex items-center gap-3 px-5 py-3"
+                    className="flex items-center gap-3 px-4 py-2.5"
                   >
                     <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-bold text-muted-foreground">
                       {pos}
                     </span>
-                    <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
-                      {entry.name.charAt(0)}
-                    </div>
+                    {entry.avatar_url ? (
+                      <img
+                        src={entry.avatar_url}
+                        alt={entry.name}
+                        className="size-7 shrink-0 rounded-full object-cover"
+                      />
+                    ) : (
+                      <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
+                        {entry.name.charAt(0)}
+                      </div>
+                    )}
                     <span className="flex-1 truncate text-sm font-medium">
                       {entry.name}
                     </span>

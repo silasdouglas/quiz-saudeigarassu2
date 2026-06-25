@@ -8,6 +8,7 @@ import {
   ChevronDown,
   LogOut,
   HelpCircle,
+  Settings,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { logout } from "@/app/login/actions";
@@ -84,9 +85,17 @@ export function SiteHeader({ profile }: { profile: Profile }) {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button className="flex items-center gap-1.5 rounded-lg px-2 py-1 text-sm hover:bg-accent transition-colors">
-                <div className="flex size-7 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
-                  {profile.full_name.charAt(0).toUpperCase()}
-                </div>
+                {profile.avatar_url ? (
+                  <img
+                    src={profile.avatar_url}
+                    alt={profile.full_name}
+                    className="size-7 rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="flex size-7 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
+                    {profile.full_name.charAt(0).toUpperCase()}
+                  </div>
+                )}
                 <span className="hidden font-medium sm:inline">{firstName}</span>
                 <ChevronDown className="size-3.5 text-muted-foreground" />
               </button>
@@ -113,6 +122,12 @@ export function SiteHeader({ profile }: { profile: Profile }) {
                 <DropdownMenuSeparator />
               </div>
 
+              <DropdownMenuItem asChild className="gap-2 cursor-pointer">
+                <Link href="/settings" className="flex items-center gap-2">
+                  <Settings className="size-4" />
+                  Configurações
+                </Link>
+              </DropdownMenuItem>
               <DropdownMenuItem className="gap-2 cursor-pointer">
                 <HelpCircle className="size-4" />
                 Ajuda

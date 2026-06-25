@@ -7,6 +7,7 @@ export interface Profile {
   full_name: string;
   role: "admin" | "user";
   created_at: string;
+  avatar_url?: string | null;
 }
 
 export interface Category {
