@@ -188,13 +188,25 @@ export function QuizRunner({
             </Badge>
             <span
               className={cn(
-                "flex items-center gap-1 text-sm font-medium",
+                "flex items-center gap-1 text-sm font-medium tabular-nums",
                 isLowTime && "text-destructive"
               )}
             >
               <Clock className="size-4" />
               {timeLeft}s
             </span>
+          </div>
+          {/* countdown bar */}
+          <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-muted">
+            <div
+              className={cn(
+                "h-full rounded-full transition-all duration-1000 ease-linear",
+                isLowTime ? "bg-destructive" : "bg-primary"
+              )}
+              style={{
+                width: `${Math.round((timeLeft / currentQuestion.time_limit_seconds) * 100)}%`,
+              }}
+            />
           </div>
           <CardTitle className="pt-2 text-lg leading-snug">
             {currentQuestion.question_text}

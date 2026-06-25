@@ -22,6 +22,15 @@ export async function register(
   if (password !== confirmPassword) return { error: "As senhas não coincidem." };
 
   const supabase = await createClient();
+
+  // Check matricula uniqueness
+  const { data: existing } = await supabase
+    .from("profiles")
+    .select("id")
+    .eq("matricula", matricula)
+    .maybeSingle();
+  if (existing) return { error: "Esta matrícula já está cadastrada." };
+
   const { error } = await supabase.auth.signUp({
     email,
     password,
