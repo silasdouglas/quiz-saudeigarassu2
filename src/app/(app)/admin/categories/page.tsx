@@ -24,7 +24,7 @@ export default async function AdminCategoriesPage() {
         <h1 className="text-xl font-semibold">Categorias</h1>
         <CategoryFormDialog />
       </div>
-      <div className="rounded-xl border">
+      <div className="overflow-hidden rounded-xl border">
         <Table>
           <TableHeader>
             <TableRow>

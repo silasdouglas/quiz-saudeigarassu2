@@ -2,9 +2,9 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Clock, ShieldAlert } from "lucide-react";
+import { Check, Clock, ShieldAlert, X } from "lucide-react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import { playCorrect, playWrong, primeAudio } from "@/lib/sounds";
 import {
   Card,
   CardContent,
@@ -56,11 +56,14 @@ export function QuizRunner({
   const [index, setIndex] = useState(0);
   const [selected, setSelected] = useState<Option | null>(null);
   const [locked, setLocked] = useState(false);
-  const [feedback, setFeedback] = useState<{ points: number } | null>(null);
+  const [feedback, setFeedback] = useState<{
+    points: number;
+    correct: boolean;
+  } | null>(null);
   const [score, setScore] = useState(initialScore);
   const [tabSwitches, setTabSwitches] = useState(initialTabSwitches);
   const [timeLeft, setTimeLeft] = useState(questions[0].time_limit_seconds);
-  const [pending, setPending] = useState(false);
+  const [, setPending] = useState(false);
 
   const questionStartedAt = useRef(Date.now());
   const answeredCount = totalQuestionCount - questions.length;
@@ -75,27 +78,36 @@ export function QuizRunner({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [index]);
 
-  const handleSubmit = useCallback(async () => {
-    setLocked(true);
-    setPending(true);
-    const timeTaken = (Date.now() - questionStartedAt.current) / 1000;
-    try {
-      const result = await submitAnswer(
-        attemptId,
-        currentQuestion.id,
-        selected,
-        timeTaken
-      );
-      setScore(result.total_score);
-      setFeedback({ points: result.points_awarded });
-    } catch {
-      toast.error("Erro ao registrar resposta. Tente novamente.");
-      setLocked(false);
-    } finally {
-      setPending(false);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [attemptId, currentQuestion.id, selected]);
+  const handleSubmit = useCallback(
+    async (choice?: Option | null) => {
+      const answer = choice !== undefined ? choice : selected;
+      if (choice !== undefined) setSelected(choice);
+      setLocked(true);
+      setPending(true);
+      const timeTaken = (Date.now() - questionStartedAt.current) / 1000;
+      try {
+        const result = await submitAnswer(
+          attemptId,
+          currentQuestion.id,
+          answer,
+          timeTaken
+        );
+        setScore(result.total_score);
+        setFeedback({
+          points: result.points_awarded,
+          correct: result.is_correct,
+        });
+        if (result.is_correct) playCorrect();
+        else playWrong();
+      } catch {
+        toast.error("Erro ao registrar resposta. Tente novamente.");
+        setLocked(false);
+      } finally {
+        setPending(false);
+      }
+    },
+    [attemptId, currentQuestion.id, selected]
+  );
 
   useEffect(() => {
     if (locked) return;
@@ -106,6 +118,22 @@ export function QuizRunner({
     const t = setTimeout(() => setTimeLeft((s) => s - 1), 1000);
     return () => clearTimeout(t);
   }, [timeLeft, locked, handleSubmit]);
+
+  const handleNext = useCallback(() => {
+    if (index + 1 < questions.length) {
+      setIndex((i) => i + 1);
+    } else {
+      setPending(true);
+      finishQuiz(attemptId);
+    }
+  }, [index, questions.length, attemptId]);
+
+  // Auto-advance to the next question after revealing the result.
+  useEffect(() => {
+    if (!feedback) return;
+    const t = setTimeout(() => handleNext(), 1900);
+    return () => clearTimeout(t);
+  }, [feedback, handleNext]);
 
   useEffect(() => {
     function handleVisibility() {
@@ -134,15 +162,6 @@ export function QuizRunner({
       document.removeEventListener("visibilitychange", handleVisibility);
   }, [attemptId, router, tabSwitchPenaltyPoints, maxTabSwitches]);
 
-  function handleNext() {
-    if (index + 1 < questions.length) {
-      setIndex((i) => i + 1);
-    } else {
-      setPending(true);
-      finishQuiz(attemptId);
-    }
-  }
-
   const options: { key: Option; text: string }[] = [
     { key: "a", text: currentQuestion.option_a },
     { key: "b", text: currentQuestion.option_b },
@@ -153,7 +172,19 @@ export function QuizRunner({
   const progressPct = Math.round(
     ((answeredCount + index) / totalQuestionCount) * 100
   );
-  const isLowTime = timeLeft <= 10;
+  const timeFrac = timeLeft / currentQuestion.time_limit_seconds;
+  const isLowTime = timeFrac <= 0.1; // 10% restante → vermelho
+  const isMidTime = timeFrac <= 0.5; // 50% restante → amarelo
+  const timeBarColor = isLowTime
+    ? "bg-destructive"
+    : isMidTime
+      ? "bg-amber-500"
+      : "bg-primary";
+  const timeTextColor = isLowTime
+    ? "text-destructive"
+    : isMidTime
+      ? "text-amber-500"
+      : undefined;
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-10">
@@ -179,7 +210,42 @@ export function QuizRunner({
         />
       </div>
 
-      <Card>
+      <div className="relative">
+        {feedback && (
+          <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center">
+            {feedback.correct ? (
+              <>
+                <div className="animate-quiz-pop flex size-24 items-center justify-center rounded-full bg-emerald-500/90 shadow-xl shadow-emerald-500/40">
+                  <Check className="size-12 text-white" strokeWidth={3} />
+                </div>
+                {Array.from({ length: 14 }).map((_, i) => (
+                  <span
+                    key={i}
+                    className="animate-quiz-confetti absolute top-0 block size-2 rounded-sm"
+                    style={{
+                      left: `${10 + (i * 80) / 14}%`,
+                      backgroundColor: [
+                        "#10b981",
+                        "#f59e0b",
+                        "#3b82f6",
+                        "#ef4444",
+                        "#a855f7",
+                      ][i % 5],
+                      animationDelay: `${(i % 5) * 0.06}s`,
+                    }}
+                  />
+                ))}
+              </>
+            ) : (
+              <div className="animate-quiz-pop flex size-24 items-center justify-center rounded-full bg-destructive/90 shadow-xl shadow-destructive/40">
+                <X className="size-12 text-white" strokeWidth={3} />
+              </div>
+            )}
+          </div>
+        )}
+        <Card
+          className={cn(feedback && !feedback.correct && "animate-quiz-shake")}
+        >
         <CardHeader>
           <div className="flex items-center justify-between">
             <Badge variant="outline">
@@ -189,7 +255,7 @@ export function QuizRunner({
             <span
               className={cn(
                 "flex items-center gap-1 text-sm font-medium tabular-nums",
-                isLowTime && "text-destructive"
+                timeTextColor
               )}
             >
               <Clock className="size-4" />
@@ -201,10 +267,10 @@ export function QuizRunner({
             <div
               className={cn(
                 "h-full rounded-full transition-all duration-1000 ease-linear",
-                isLowTime ? "bg-destructive" : "bg-primary"
+                timeBarColor
               )}
               style={{
-                width: `${Math.round((timeLeft / currentQuestion.time_limit_seconds) * 100)}%`,
+                width: `${Math.round(timeFrac * 100)}%`,
               }}
             />
           </div>
@@ -224,10 +290,24 @@ export function QuizRunner({
                   key={option.key}
                   type="button"
                   disabled={locked}
-                  onClick={() => setSelected(option.key)}
+                  onClick={() => {
+                    primeAudio();
+                    setSelected(option.key);
+                    handleSubmit(option.key);
+                  }}
                   className={cn(
                     "flex items-center gap-3 rounded-lg border px-4 py-3 text-left text-sm transition-colors",
-                    isSelected && "border-primary bg-accent",
+                    !locked && "cursor-pointer",
+                    isSelected && !locked && "border-primary bg-accent",
+                    locked &&
+                      isSelected &&
+                      feedback?.correct &&
+                      "border-emerald-500 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
+                    locked &&
+                      isSelected &&
+                      feedback &&
+                      !feedback.correct &&
+                      "border-destructive bg-destructive/10 text-destructive",
                     !locked && !isSelected && "hover:bg-accent/50"
                   )}
                 >
@@ -240,29 +320,34 @@ export function QuizRunner({
             })}
           </div>
 
-          {feedback && (
-            <p className="text-sm font-medium text-muted-foreground">
-              +{feedback.points} pts registrado
+          {locked ? (
+            <div
+              className={cn(
+                "flex items-center justify-between rounded-lg px-4 py-3 text-sm font-medium",
+                feedback?.correct
+                  ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                  : "bg-destructive/10 text-destructive"
+              )}
+            >
+              <span>
+                {feedback?.correct
+                  ? `Acertou! +${feedback.points} pts`
+                  : "Resposta incorreta"}
+              </span>
+              <span className="text-xs font-normal opacity-70">
+                {index + 1 < questions.length
+                  ? "Próxima pergunta…"
+                  : "Finalizando…"}
+              </span>
+            </div>
+          ) : (
+            <p className="text-center text-xs text-muted-foreground">
+              Toque em uma alternativa para responder.
             </p>
           )}
-
-          {!locked ? (
-            <Button
-              className="w-full"
-              disabled={!selected || pending}
-              onClick={handleSubmit}
-            >
-              Confirmar resposta
-            </Button>
-          ) : (
-            <Button className="w-full" disabled={pending} onClick={handleNext}>
-              {index + 1 < questions.length
-                ? "Próxima pergunta"
-                : "Finalizar quiz"}
-            </Button>
-          )}
         </CardContent>
-      </Card>
+        </Card>
+      </div>
     </div>
   );
 }

@@ -1,21 +1,55 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Stethoscope } from "lucide-react";
+import Image from "next/image";
+import {
+  Brain,
+  CheckCircle2,
+  HelpCircle,
+  Award,
+  Sparkles,
+  Lightbulb,
+  ClipboardCheck,
+  Stethoscope,
+} from "lucide-react";
 import { LoginForm } from "@/components/auth/login-form";
 
 export const metadata: Metadata = {
   title: "Entrar | Quiz Saúde Igarassu",
 };
 
+// Decorative quiz-themed watermark icons scattered across the background.
+const WATERMARKS = [
+  { Icon: HelpCircle, className: "left-[6%] top-[10%] size-24 -rotate-12" },
+  { Icon: Brain, className: "right-[8%] top-[16%] size-28 rotate-12" },
+  { Icon: CheckCircle2, className: "left-[12%] bottom-[14%] size-20 rotate-6" },
+  { Icon: Award, className: "right-[10%] bottom-[12%] size-24 -rotate-6" },
+  { Icon: Sparkles, className: "left-[44%] top-[6%] size-16 rotate-3" },
+  { Icon: Lightbulb, className: "right-[40%] bottom-[8%] size-20 -rotate-12" },
+  { Icon: ClipboardCheck, className: "left-[2%] top-[46%] size-16 rotate-12" },
+  { Icon: Stethoscope, className: "right-[3%] top-[48%] size-20 -rotate-6" },
+] as const;
+
 export default function LoginPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-primary/20 via-primary/5 to-background p-4">
-      <div className="w-full max-w-sm">
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-br from-primary/20 via-primary/5 to-background p-4">
+      {/* Quiz watermark layer */}
+      <div className="pointer-events-none absolute inset-0 select-none text-primary/[0.07]">
+        {WATERMARKS.map(({ Icon, className }, i) => (
+          <Icon key={i} className={`absolute ${className}`} strokeWidth={1.5} />
+        ))}
+      </div>
+
+      <div className="relative z-10 w-full max-w-sm">
         {/* Logo mark */}
         <div className="mb-6 flex flex-col items-center text-center">
-          <div className="mb-4 flex size-14 items-center justify-center rounded-2xl bg-primary shadow-lg shadow-primary/30">
-            <Stethoscope className="size-7 text-primary-foreground" />
-          </div>
+          <Image
+            src="/logo-mark.png"
+            alt="Prefeitura de Igarassu"
+            width={96}
+            height={96}
+            className="mb-4 size-24 object-contain drop-shadow-lg"
+            priority
+          />
           <h1 className="text-2xl font-bold tracking-tight">Quiz Saúde Igarassu</h1>
           <p className="mt-1.5 text-sm text-muted-foreground max-w-xs">
             Capacitação para enfermeiros e técnicos de enfermagem da Prefeitura

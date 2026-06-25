@@ -11,7 +11,11 @@ type RawAttempt = {
   total_score: number;
   started_at: string | null;
   finished_at: string | null;
-  profiles: { full_name: string; avatar_url: string | null } | null;
+  profiles: {
+    full_name: string;
+    avatar_url: string | null;
+    role?: string | null;
+  } | null;
 };
 
 export function buildRanking(attempts: RawAttempt[]): RankingEntry[] {
@@ -19,6 +23,8 @@ export function buildRanking(attempts: RawAttempt[]): RankingEntry[] {
 
   for (const a of attempts) {
     const profile = a.profiles;
+    // Admins practise the quiz but never appear in the ranking.
+    if (profile?.role === "admin") continue;
     const timeSec =
       a.started_at && a.finished_at
         ? Math.max(

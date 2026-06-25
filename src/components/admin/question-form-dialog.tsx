@@ -2,6 +2,7 @@
 
 import { useActionState, useEffect, useRef, useState } from "react";
 import { Pencil, Plus } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -101,8 +102,8 @@ export function QuestionFormDialog({ question, questionAnswer, categories }: Pro
         </Button>
       )}
 
-      <DialogContent className="max-w-2xl">
-        <form action={formAction}>
+      <DialogContent className="gap-0 p-0 sm:max-w-3xl">
+        <form action={formAction} className="flex max-h-[88vh] flex-col">
           {/* Hidden inputs for Radix-controlled components */}
           <input type="hidden" name="difficulty" value={difficulty} />
           <input type="hidden" name="correct_option" value={correctOption} />
@@ -113,53 +114,99 @@ export function QuestionFormDialog({ question, questionAnswer, categories }: Pro
           />
           {active && <input type="hidden" name="active" value="on" />}
 
-          <DialogHeader>
-            <DialogTitle>
-              {question ? "Editar pergunta" : "Nova pergunta"}
-            </DialogTitle>
-            <DialogDescription>
-              Preencha todos os campos obrigatórios.
-            </DialogDescription>
+          <DialogHeader className="space-y-0 border-b bg-gradient-to-br from-primary/10 via-primary/5 to-transparent px-6 py-5">
+            <div className="flex items-center gap-3">
+              <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-sm shadow-primary/30">
+                {question ? (
+                  <Pencil className="size-5" />
+                ) : (
+                  <Plus className="size-5" />
+                )}
+              </div>
+              <div className="space-y-0.5 text-left">
+                <DialogTitle className="text-lg">
+                  {question ? "Editar pergunta" : "Nova pergunta"}
+                </DialogTitle>
+                <DialogDescription>
+                  Preencha todos os campos obrigatórios.
+                </DialogDescription>
+              </div>
+            </div>
           </DialogHeader>
 
-          <div className="max-h-[60vh] space-y-3 overflow-y-auto py-4 pr-1">
+          <div className="flex-1 space-y-5 overflow-y-auto px-6 py-5">
             <div className="space-y-1.5">
-              <Label htmlFor="question_text">Pergunta</Label>
+              <Label htmlFor="question_text" className="text-sm font-semibold">
+                Pergunta
+              </Label>
               <Textarea
                 id="question_text"
                 name="question_text"
                 defaultValue={question?.question_text}
                 rows={3}
                 required
+                className="resize-none text-base"
+                placeholder="Digite o enunciado da pergunta..."
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              {(["a", "b", "c", "d"] as Option[]).map((opt) => (
-                <div key={opt} className="space-y-1.5">
-                  <Label htmlFor={`option_${opt}`}>
-                    Opção {opt.toUpperCase()}
-                  </Label>
-                  <Input
-                    id={`option_${opt}`}
-                    name={`option_${opt}`}
-                    defaultValue={
-                      question?.[`option_${opt}` as keyof Question] as string
-                    }
-                    required
-                  />
-                </div>
-              ))}
+            <div className="space-y-2.5">
+              <Label className="text-sm font-semibold">
+                Alternativas
+                <span className="ml-1.5 font-normal text-muted-foreground">
+                  — a correta fica destacada
+                </span>
+              </Label>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                {(["a", "b", "c", "d"] as Option[]).map((opt) => {
+                  const isCorrect = correctOption === opt;
+                  return (
+                    <div
+                      key={opt}
+                      className={cn(
+                        "flex items-center gap-2.5 rounded-xl border bg-card p-2.5 transition-colors",
+                        isCorrect
+                          ? "border-primary/60 bg-primary/5 ring-1 ring-primary/30"
+                          : "border-border"
+                      )}
+                    >
+                      <button
+                        type="button"
+                        onClick={() => setCorrectOption(opt)}
+                        aria-label={`Marcar opção ${opt.toUpperCase()} como correta`}
+                        className={cn(
+                          "flex size-8 shrink-0 items-center justify-center rounded-lg text-sm font-bold uppercase transition-colors",
+                          isCorrect
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-muted text-muted-foreground hover:bg-muted/70"
+                        )}
+                      >
+                        {opt}
+                      </button>
+                      <Input
+                        id={`option_${opt}`}
+                        name={`option_${opt}`}
+                        defaultValue={
+                          question?.[`option_${opt}` as keyof Question] as string
+                        }
+                        required
+                        placeholder={`Opção ${opt.toUpperCase()}`}
+                        className="border-0 bg-transparent px-1 shadow-none focus-visible:ring-0"
+                      />
+                    </div>
+                  );
+                })}
+              </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-4 rounded-xl border bg-muted/30 p-4 sm:grid-cols-2">
               <div className="space-y-1.5">
-                <Label>Resposta correta</Label>
+                <Label className="text-sm font-semibold">Resposta correta</Label>
                 <Select
                   value={correctOption}
                   onValueChange={(v) => setCorrectOption(v as Option)}
                 >
-                  <SelectTrigger className="w-full">
+                  <SelectTrigger className="w-full bg-card">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -173,12 +220,12 @@ export function QuestionFormDialog({ question, questionAnswer, categories }: Pro
               </div>
 
               <div className="space-y-1.5">
-                <Label>Dificuldade</Label>
+                <Label className="text-sm font-semibold">Dificuldade</Label>
                 <Select
                   value={difficulty}
                   onValueChange={(v) => setDifficulty(v as Difficulty)}
                 >
-                  <SelectTrigger className="w-full">
+                  <SelectTrigger className="w-full bg-card">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -188,13 +235,11 @@ export function QuestionFormDialog({ question, questionAnswer, categories }: Pro
                   </SelectContent>
                 </Select>
               </div>
-            </div>
 
-            <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label>Categoria</Label>
+                <Label className="text-sm font-semibold">Categoria</Label>
                 <Select value={categoryId} onValueChange={setCategoryId}>
-                  <SelectTrigger className="w-full">
+                  <SelectTrigger className="w-full bg-card">
                     <SelectValue placeholder="Sem categoria" />
                   </SelectTrigger>
                   <SelectContent>
@@ -209,7 +254,9 @@ export function QuestionFormDialog({ question, questionAnswer, categories }: Pro
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="time_limit_seconds">Tempo limite (s)</Label>
+                <Label htmlFor="time_limit_seconds" className="text-sm font-semibold">
+                  Tempo limite (s)
+                </Label>
                 <Input
                   id="time_limit_seconds"
                   name="time_limit_seconds"
@@ -217,25 +264,36 @@ export function QuestionFormDialog({ question, questionAnswer, categories }: Pro
                   min="1"
                   defaultValue={question?.time_limit_seconds ?? 60}
                   required
+                  className="bg-card"
                 />
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <label
+              htmlFor="active_check"
+              className="flex cursor-pointer items-center gap-3 rounded-xl border p-3.5 transition-colors hover:bg-muted/40"
+            >
               <Checkbox
                 id="active_check"
                 checked={active}
                 onCheckedChange={(v) => setActive(!!v)}
               />
-              <Label htmlFor="active_check">Pergunta ativa</Label>
-            </div>
+              <div className="space-y-0.5">
+                <p className="text-sm font-semibold leading-none">Pergunta ativa</p>
+                <p className="text-xs text-muted-foreground">
+                  Perguntas inativas não entram nos quizzes.
+                </p>
+              </div>
+            </label>
 
             {state?.error && (
-              <p className="text-sm text-destructive">{state.error}</p>
+              <p className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">
+                {state.error}
+              </p>
             )}
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="mx-0 mb-0 rounded-none border-t bg-muted/30 px-6 py-4">
             <Button
               type="button"
               variant="outline"
@@ -244,7 +302,7 @@ export function QuestionFormDialog({ question, questionAnswer, categories }: Pro
               Cancelar
             </Button>
             <Button type="submit" disabled={pending}>
-              Salvar
+              {pending ? "Salvando..." : "Salvar"}
             </Button>
           </DialogFooter>
         </form>

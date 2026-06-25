@@ -40,7 +40,7 @@ export default async function RankingPage({
 
   const query = supabase
     .from("quiz_attempts")
-    .select("user_id, total_score, started_at, finished_at, profiles(full_name, avatar_url)")
+    .select("user_id, total_score, started_at, finished_at, profiles(full_name, avatar_url, role)")
     .eq("status", "completed");
 
   const { data } =

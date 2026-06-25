@@ -17,7 +17,7 @@ export default async function AdminSettingsPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-xl font-semibold">Configurações</h1>
+      <h1 className="text-xl font-semibold">Configurações Gerais</h1>
 
       <div className="max-w-md rounded-xl border p-6">
         <form action={updateSettings} className="space-y-4">

@@ -21,7 +21,7 @@ async function fetchRanking(
 
   const query = supabase
     .from("quiz_attempts")
-    .select("user_id, total_score, started_at, finished_at, profiles(full_name, avatar_url)")
+    .select("user_id, total_score, started_at, finished_at, profiles(full_name, avatar_url, role)")
     .eq("status", "completed");
 
   const { data } =
@@ -73,8 +73,8 @@ export default async function HomePage({
   return (
     <div className="flex-1 bg-gradient-to-b from-primary/5 via-background to-background">
       {/* Hero */}
-      <div className="mx-auto max-w-xl px-4 pt-10 pb-4 text-center sm:pt-12">
-        <div className="mb-3 flex items-center justify-center gap-2 text-sm text-muted-foreground">
+      <div className="mx-auto max-w-sm px-4 pt-8 pb-2 md:max-w-2xl">
+        <div className="mb-1.5 flex items-center gap-2 text-xs text-muted-foreground">
           <Clock3 className="size-3.5" />
           <span>
             {new Date().toLocaleDateString("pt-BR", {
@@ -84,10 +84,10 @@ export default async function HomePage({
             })}
           </span>
         </div>
-        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
+        <h1 className="text-xl font-bold tracking-tight sm:text-2xl">
           Olá, {firstName}
         </h1>
-        <p className="mt-2 text-sm text-muted-foreground sm:text-base">
+        <p className="mt-1 text-sm text-muted-foreground">
           Bem-vindo(a) ao quiz de capacitação da Secretaria de Saúde de Igarassu.
         </p>
       </div>

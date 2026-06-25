@@ -28,7 +28,7 @@ import type {
   QuestionAnswer,
   WeeklySchedule,
 } from "@/lib/types";
-import { CalendarDays, Clock } from "lucide-react";
+import { CalendarDays, Clock, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const DIFFICULTY_BADGE_CLASS: Record<Difficulty, string> = {
@@ -57,8 +57,14 @@ function formatDate(dateStr: string): string {
   });
 }
 
-function buildUrl(offset: number, filterCategory: string, filterDifficulty: string): string {
+function buildUrl(
+  offset: number,
+  filterCategory: string,
+  filterDifficulty: string,
+  search: string
+): string {
   const p = new URLSearchParams();
+  if (search) p.set("q", search);
   if (filterCategory) p.set("category_id", filterCategory);
   if (filterDifficulty) p.set("difficulty", filterDifficulty);
   if (offset > 0) p.set("offset", String(offset));
@@ -78,6 +84,7 @@ export default async function AdminQuestionsPage({
     offset?: string;
     category_id?: string;
     difficulty?: string;
+    q?: string;
   }>;
 }) {
   await requireAdmin();
@@ -206,7 +213,7 @@ export default async function AdminQuestionsPage({
                 </div>
               </div>
 
-              <div className="rounded-xl border">
+              <div className="overflow-hidden rounded-xl border">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -287,7 +294,7 @@ export default async function AdminQuestionsPage({
             <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground">
               Outros agendamentos
             </h2>
-            <div className="rounded-xl border">
+            <div className="overflow-hidden rounded-xl border">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -346,6 +353,8 @@ export default async function AdminQuestionsPage({
   const offset = Math.max(0, parseInt(params.offset ?? "0", 10));
   const filterCategory = params.category_id ?? "";
   const filterDifficulty = params.difficulty ?? "";
+  const search = (params.q ?? "").trim();
+  const hasFilters = Boolean(filterCategory || filterDifficulty || search);
 
   let query = supabase
     .from("questions")
@@ -357,6 +366,7 @@ export default async function AdminQuestionsPage({
 
   if (filterCategory) query = query.eq("category_id", filterCategory);
   if (filterDifficulty) query = query.eq("difficulty", filterDifficulty as Difficulty);
+  if (search) query = query.ilike("question_text", `%${search}%`);
 
   const { data: rawQuestions, count } = await query;
 
@@ -395,6 +405,16 @@ export default async function AdminQuestionsPage({
 
       {/* Filters */}
       <form method="GET" action="/admin/questions" className="flex flex-wrap gap-2">
+        <div className="relative min-w-56 flex-1">
+          <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
+          <input
+            type="search"
+            name="q"
+            defaultValue={search}
+            placeholder="Pesquisar pergunta..."
+            className="h-8 w-full rounded-lg border border-input bg-transparent pl-8 pr-2.5 text-sm outline-none focus:border-ring"
+          />
+        </div>
         <select
           name="category_id"
           defaultValue={filterCategory}
@@ -423,7 +443,7 @@ export default async function AdminQuestionsPage({
         >
           Filtrar
         </button>
-        {(filterCategory || filterDifficulty) && (
+        {hasFilters && (
           <a
             href="/admin/questions"
             className="flex h-8 items-center rounded-lg px-2.5 text-sm text-muted-foreground hover:text-foreground"
@@ -436,9 +456,9 @@ export default async function AdminQuestionsPage({
       <div>
         <p className="mb-2 text-sm text-muted-foreground">
           {total} {total === 1 ? "pergunta" : "perguntas"}
-          {(filterCategory || filterDifficulty) && " (filtradas)"}
+          {hasFilters && " (filtradas)"}
         </p>
-        <div className="rounded-xl border">
+        <div className="overflow-hidden rounded-xl border">
           <Table>
             <TableHeader>
               <TableRow>
@@ -512,7 +532,7 @@ export default async function AdminQuestionsPage({
             <div className="flex gap-2">
               {hasPrev && (
                 <a
-                  href={buildUrl(Math.max(0, offset - PAGE_SIZE), filterCategory, filterDifficulty)}
+                  href={buildUrl(Math.max(0, offset - PAGE_SIZE), filterCategory, filterDifficulty, search)}
                   className="rounded-lg border px-3 py-1 hover:bg-muted"
                 >
                   Anterior
@@ -520,7 +540,7 @@ export default async function AdminQuestionsPage({
               )}
               {hasNext && (
                 <a
-                  href={buildUrl(offset + PAGE_SIZE, filterCategory, filterDifficulty)}
+                  href={buildUrl(offset + PAGE_SIZE, filterCategory, filterDifficulty, search)}
                   className="rounded-lg border px-3 py-1 hover:bg-muted"
                 >
                   Próxima

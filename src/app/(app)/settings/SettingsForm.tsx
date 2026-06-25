@@ -1,31 +1,30 @@
 "use client";
 
 import { useActionState, useRef, useState } from "react";
-import { Camera, KeyRound, Eye, EyeOff, User, UserCircle2 } from "lucide-react";
+import { Camera, KeyRound, Eye, EyeOff, User } from "lucide-react";
 import { updateAvatar, updatePassword } from "./actions";
 import { cn } from "@/lib/utils";
 import type { Profile } from "@/lib/types";
 
 type AvatarState = { error?: string; success?: boolean };
 type PasswordState = { error?: string; success?: boolean };
-type Section = "perfil" | "senha" | "conta";
+type Section = "conta" | "seguranca";
 
 const SECTIONS: { value: Section; label: string; icon: React.ReactNode }[] = [
-  { value: "perfil", label: "Foto de perfil", icon: <UserCircle2 className="size-4" /> },
-  { value: "senha", label: "Trocar senha", icon: <KeyRound className="size-4" /> },
   { value: "conta", label: "Minha conta", icon: <User className="size-4" /> },
+  { value: "seguranca", label: "Segurança", icon: <KeyRound className="size-4" /> },
 ];
 
 export function SettingsForm({
   profile,
-  defaultSection = "perfil",
+  defaultSection = "conta",
 }: {
   profile: Profile;
   defaultSection?: string;
 }) {
   const validSection = SECTIONS.some((s) => s.value === defaultSection)
     ? (defaultSection as Section)
-    : "perfil";
+    : "conta";
   const [section, setSection] = useState<Section>(validSection);
 
   const [avatarState, avatarAction, avatarPending] = useActionState<AvatarState, FormData>(
@@ -92,8 +91,9 @@ export function SettingsForm({
         {/* ── Content ──────────────────────────────────────────────────── */}
         <div className="min-w-0 flex-1 rounded-xl border bg-card p-6">
 
-          {/* ── PERFIL ───────────────────────────────────────────────── */}
-          {section === "perfil" && (
+          {/* ── MINHA CONTA ──────────────────────────────────────────── */}
+          {section === "conta" && (
+            <div className="space-y-8">
             <form action={avatarAction} className="space-y-5">
               <h2 className="font-semibold">Foto de perfil</h2>
               <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-start">
@@ -160,12 +160,34 @@ export function SettingsForm({
                 {avatarPending ? "Salvando..." : "Salvar foto"}
               </button>
             </form>
+
+            <div className="space-y-4 border-t pt-6">
+              <h2 className="font-semibold">Dados da conta</h2>
+              <div className="space-y-3">
+                {[
+                  { label: "Nome completo", value: profile.full_name },
+                  { label: "E-mail", value: profile.email },
+                  {
+                    label: "Perfil",
+                    value: profile.role === "admin" ? "Administrador" : "Usuário",
+                  },
+                ].map((field) => (
+                  <div key={field.label}>
+                    <label className="mb-1 block text-xs font-medium text-muted-foreground">
+                      {field.label}
+                    </label>
+                    <div className="rounded-lg border bg-muted/40 px-3 py-2 text-sm">{field.value}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            </div>
           )}
 
-          {/* ── SENHA ────────────────────────────────────────────────── */}
-          {section === "senha" && (
+          {/* ── SEGURANÇA ────────────────────────────────────────────── */}
+          {section === "seguranca" && (
             <form action={passwordAction} className="space-y-4">
-              <h2 className="font-semibold">Trocar senha</h2>
+              <h2 className="font-semibold">Segurança</h2>
 
               <div className="space-y-1.5">
                 <label className="block text-xs font-medium text-muted-foreground">Senha atual</label>
@@ -248,30 +270,6 @@ export function SettingsForm({
                 {passwordPending ? "Alterando..." : "Alterar senha"}
               </button>
             </form>
-          )}
-
-          {/* ── CONTA ────────────────────────────────────────────────── */}
-          {section === "conta" && (
-            <div className="space-y-4">
-              <h2 className="font-semibold">Minha conta</h2>
-              <div className="space-y-3">
-                {[
-                  { label: "Nome completo", value: profile.full_name },
-                  { label: "E-mail", value: profile.email },
-                  {
-                    label: "Perfil",
-                    value: profile.role === "admin" ? "Administrador" : "Usuário",
-                  },
-                ].map((field) => (
-                  <div key={field.label}>
-                    <label className="mb-1 block text-xs font-medium text-muted-foreground">
-                      {field.label}
-                    </label>
-                    <div className="rounded-lg border bg-muted/40 px-3 py-2 text-sm">{field.value}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
           )}
         </div>
       </div>

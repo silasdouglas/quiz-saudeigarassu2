@@ -24,7 +24,9 @@ export default async function QuizPage() {
         .maybeSingle()
     : { data: null };
 
-  if (attempt?.status === "completed") {
+  const isAdmin = profile.role === "admin";
+
+  if (attempt?.status === "completed" && !isAdmin) {
     return (
       <div className="mx-auto max-w-md px-4 py-12">
         <div className="rounded-2xl border bg-card p-8 text-center shadow-sm">
@@ -119,14 +121,22 @@ export default async function QuizPage() {
         </p>
       </div>
 
+      {isAdmin && (
+        <div className="mb-4 rounded-xl border border-primary/20 bg-primary/5 p-3 text-sm text-muted-foreground">
+          <span className="font-medium text-primary">Modo treino (admin):</span>{" "}
+          você pode refazer o quiz quantas vezes quiser. Suas tentativas não são
+          gravadas no ranking.
+        </div>
+      )}
+
       <div className="space-y-3">
         {/* Perguntas */}
-        <div className="flex items-start gap-4 rounded-xl border bg-card p-4">
-          <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-            <ListChecks className="size-4 text-primary" />
+        <div className="group flex items-start gap-4 rounded-2xl border bg-gradient-to-br from-primary/[0.07] to-transparent p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
+          <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 ring-1 ring-primary/10">
+            <ListChecks className="size-5 text-primary" />
           </div>
           <div>
-            <p className="text-sm font-medium">Formato</p>
+            <p className="text-sm font-semibold">Formato</p>
             <p className="mt-0.5 text-sm text-muted-foreground">
               {questionCount} pergunta{questionCount !== 1 ? "s" : ""} de
               múltipla escolha — fácil (5 pts), média (10 pts), difícil (15 pts).
@@ -135,12 +145,12 @@ export default async function QuizPage() {
         </div>
 
         {/* Tempo */}
-        <div className="flex items-start gap-4 rounded-xl border bg-card p-4">
-          <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-amber-500/10">
-            <Clock className="size-4 text-amber-500" />
+        <div className="group flex items-start gap-4 rounded-2xl border bg-gradient-to-br from-amber-500/[0.08] to-transparent p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
+          <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-amber-500/20 to-amber-500/5 ring-1 ring-amber-500/10">
+            <Clock className="size-5 text-amber-500" />
           </div>
           <div>
-            <p className="text-sm font-medium">Tempo</p>
+            <p className="text-sm font-semibold">Tempo</p>
             <p className="mt-0.5 text-sm text-muted-foreground">
               Cada pergunta tem um timer próprio. Estimativa total: ~
               {Math.ceil(estimatedSeconds / 60)} min. Menos tempo = melhor
@@ -150,12 +160,12 @@ export default async function QuizPage() {
         </div>
 
         {/* Tab switch */}
-        <div className="flex items-start gap-4 rounded-xl border border-destructive/20 bg-destructive/5 p-4">
-          <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-destructive/10">
-            <ShieldAlert className="size-4 text-destructive" />
+        <div className="group flex items-start gap-4 rounded-2xl border border-destructive/20 bg-gradient-to-br from-destructive/[0.09] to-transparent p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md">
+          <div className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-destructive/20 to-destructive/5 ring-1 ring-destructive/10">
+            <ShieldAlert className="size-5 text-destructive" />
           </div>
           <div>
-            <p className="text-sm font-medium text-destructive">Atenção</p>
+            <p className="text-sm font-semibold text-destructive">Atenção</p>
             <p className="mt-0.5 text-sm text-muted-foreground">
               Não saia da aba. Cada troca desconta{" "}
               {settings?.tab_switch_penalty_points ?? 5} pts. Após{" "}

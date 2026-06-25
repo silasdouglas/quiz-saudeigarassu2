@@ -5,9 +5,9 @@ import { AdminNavLink } from "@/components/admin/admin-nav-link";
 
 const navItems = [
   { href: "/admin", label: "Dashboard", icon: <LayoutDashboard className="size-4 shrink-0" /> },
-  { href: "/admin/categories", label: "Categorias", icon: <Tag className="size-4 shrink-0" /> },
   { href: "/admin/questions", label: "Perguntas", icon: <HelpCircle className="size-4 shrink-0" /> },
-  { href: "/admin/settings", label: "Configurações", icon: <Settings2 className="size-4 shrink-0" /> },
+  { href: "/admin/categories", label: "Categorias", icon: <Tag className="size-4 shrink-0" /> },
+  { href: "/admin/settings", label: "Configurações gerais", icon: <Settings2 className="size-4 shrink-0" /> },
 ];
 
 export default async function AdminLayout({

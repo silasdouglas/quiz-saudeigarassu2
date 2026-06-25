@@ -1,29 +1,24 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
-  Stethoscope,
   ShieldCheck,
   ChevronDown,
   LogOut,
   HelpCircle,
   Settings,
-  UserCircle2,
-  KeyRound,
-  User,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { logout } from "@/app/login/actions";
+import { ThemeToggle } from "@/components/theme-toggle";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import type { Profile } from "@/lib/types";
@@ -38,34 +33,39 @@ export function SiteHeader({ profile }: { profile: Profile }) {
   const firstName = profile.full_name.split(" ")[0];
 
   return (
-    <header className="sticky top-0 z-10 border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/80">
+    <header className="sticky top-0 z-10 bg-primary text-primary-foreground shadow-sm">
       <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4">
         {/* Logo */}
         <Link
           href="/"
           className="flex items-center gap-2 font-semibold tracking-tight"
         >
-          <div className="flex size-7 items-center justify-center rounded-lg bg-primary">
-            <Stethoscope className="size-4 text-primary-foreground" />
+          <div className="flex size-8 items-center justify-center rounded-lg bg-white p-1 shadow-sm">
+            <Image
+              src="/logo-mark.png"
+              alt="Prefeitura de Igarassu"
+              width={32}
+              height={32}
+              className="size-full object-contain"
+              priority
+            />
           </div>
-          <span>
-            Quiz <span className="text-primary">Igarassu</span>
-          </span>
+          <span className="text-primary-foreground">Quiz Igarassu</span>
         </Link>
 
         {/* Desktop nav + user */}
         <div className="flex items-center gap-1">
           {/* Nav links — hidden on mobile */}
-          <nav className="mr-2 hidden items-center gap-0.5 sm:flex">
+          <nav className="mr-1 hidden items-center gap-0.5 sm:flex">
             {navItems.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "cursor-pointer rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-accent",
+                  "cursor-pointer rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-white/15",
                   pathname.startsWith(item.href)
-                    ? "bg-accent text-accent-foreground"
-                    : "text-muted-foreground"
+                    ? "bg-white/20 text-white"
+                    : "text-primary-foreground/80"
                 )}
               >
                 {item.label}
@@ -75,10 +75,10 @@ export function SiteHeader({ profile }: { profile: Profile }) {
               <Link
                 href="/admin"
                 className={cn(
-                  "flex cursor-pointer items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-accent",
+                  "flex cursor-pointer items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-white/15",
                   pathname.startsWith("/admin")
-                    ? "bg-accent text-accent-foreground"
-                    : "text-muted-foreground"
+                    ? "bg-white/20 text-white"
+                    : "text-primary-foreground/80"
                 )}
               >
                 <ShieldCheck className="size-3.5" />
@@ -87,28 +87,28 @@ export function SiteHeader({ profile }: { profile: Profile }) {
             )}
           </nav>
 
-          {/* Divider between nav and profile dropdown */}
-          {profile.role === "admin" && (
-            <span className="mr-1 hidden h-5 w-px bg-border sm:block" />
-          )}
+          <ThemeToggle className="text-primary-foreground/90 hover:bg-white/15" />
+
+          {/* Divider before profile dropdown */}
+          <span className="mx-1 hidden h-5 w-px bg-white/25 sm:block" />
 
           {/* Profile dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="flex cursor-pointer items-center gap-1.5 rounded-lg px-2 py-1 text-sm hover:bg-accent transition-colors">
+              <button className="flex cursor-pointer items-center gap-1.5 rounded-lg px-1.5 py-1 text-sm transition-colors hover:bg-white/15">
                 {profile.avatar_url ? (
                   <img
                     src={profile.avatar_url}
                     alt={profile.full_name}
-                    className="size-7 rounded-full object-cover"
+                    className="size-7 rounded-full object-cover ring-2 ring-white/40"
                   />
                 ) : (
-                  <div className="flex size-7 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
+                  <div className="flex size-7 items-center justify-center rounded-full bg-white/20 text-xs font-semibold text-white">
                     {profile.full_name.charAt(0).toUpperCase()}
                   </div>
                 )}
                 <span className="hidden font-medium sm:inline">{firstName}</span>
-                <ChevronDown className="size-3.5 text-muted-foreground" />
+                <ChevronDown className="size-3.5 text-primary-foreground/70" />
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-52">
@@ -136,35 +136,17 @@ export function SiteHeader({ profile }: { profile: Profile }) {
                 <DropdownMenuSeparator />
               </div>
 
-              <DropdownMenuSub>
-                <DropdownMenuSubTrigger className="cursor-pointer gap-2">
+              <DropdownMenuItem asChild className="cursor-pointer gap-2">
+                <Link href="/settings">
                   <Settings className="size-4" />
                   Configurações
-                </DropdownMenuSubTrigger>
-                <DropdownMenuSubContent>
-                  <DropdownMenuItem asChild className="cursor-pointer gap-2">
-                    <Link href="/settings?section=perfil">
-                      <UserCircle2 className="size-4" />
-                      Foto de perfil
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild className="cursor-pointer gap-2">
-                    <Link href="/settings?section=senha">
-                      <KeyRound className="size-4" />
-                      Trocar senha
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild className="cursor-pointer gap-2">
-                    <Link href="/settings?section=conta">
-                      <User className="size-4" />
-                      Minha conta
-                    </Link>
-                  </DropdownMenuItem>
-                </DropdownMenuSubContent>
-              </DropdownMenuSub>
-              <DropdownMenuItem className="cursor-pointer gap-2">
-                <HelpCircle className="size-4" />
-                Ajuda
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild className="cursor-pointer gap-2">
+                <Link href="/ajuda">
+                  <HelpCircle className="size-4" />
+                  Ajuda
+                </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <form action={logout}>

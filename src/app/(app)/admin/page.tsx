@@ -20,19 +20,19 @@ function getWeekStart(): string {
 }
 
 const STAT_COLORS = [
-  "bg-sky-50 border-sky-100",
-  "bg-violet-50 border-violet-100",
-  "bg-amber-50 border-amber-100",
-  "bg-emerald-50 border-emerald-100",
-  "bg-rose-50 border-rose-100",
+  "bg-gradient-to-br from-sky-500/15 to-transparent border-sky-500/20",
+  "bg-gradient-to-br from-violet-500/15 to-transparent border-violet-500/20",
+  "bg-gradient-to-br from-amber-500/15 to-transparent border-amber-500/20",
+  "bg-gradient-to-br from-emerald-500/15 to-transparent border-emerald-500/20",
+  "bg-gradient-to-br from-rose-500/15 to-transparent border-rose-500/20",
 ] as const;
 
-const STAT_ICON_COLORS = [
-  "text-sky-400",
-  "text-violet-400",
-  "text-amber-400",
-  "text-emerald-500",
-  "text-rose-400",
+const STAT_ICON_CHIP = [
+  "bg-sky-500/15 text-sky-500",
+  "bg-violet-500/15 text-violet-500",
+  "bg-amber-500/15 text-amber-500",
+  "bg-emerald-500/15 text-emerald-500",
+  "bg-rose-500/15 text-rose-500",
 ] as const;
 
 export default async function AdminDashboardPage() {
@@ -105,20 +105,22 @@ export default async function AdminDashboardPage() {
             <Card
               key={stat.label}
               size="sm"
-              className={STAT_COLORS[i % STAT_COLORS.length]}
+              className={`shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md ${STAT_COLORS[i % STAT_COLORS.length]}`}
             >
               <CardHeader>
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-2">
                   <CardTitle className="text-xs font-normal text-muted-foreground">
                     {stat.label}
                   </CardTitle>
-                  <Icon
-                    className={`size-4 ${STAT_ICON_COLORS[i % STAT_ICON_COLORS.length]}`}
-                  />
+                  <span
+                    className={`flex size-8 shrink-0 items-center justify-center rounded-lg ${STAT_ICON_CHIP[i % STAT_ICON_CHIP.length]}`}
+                  >
+                    <Icon className="size-4" />
+                  </span>
                 </div>
               </CardHeader>
               <CardContent>
-                <p className="text-2xl font-semibold tabular-nums">
+                <p className="text-3xl font-bold tabular-nums tracking-tight">
                   {stat.value}
                 </p>
               </CardContent>
