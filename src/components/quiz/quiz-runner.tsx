@@ -56,9 +56,7 @@ export function QuizRunner({
   const [index, setIndex] = useState(0);
   const [selected, setSelected] = useState<Option | null>(null);
   const [locked, setLocked] = useState(false);
-  const [feedback, setFeedback] = useState<
-    { isCorrect: boolean; points: number } | null
-  >(null);
+  const [feedback, setFeedback] = useState<{ points: number } | null>(null);
   const [score, setScore] = useState(initialScore);
   const [tabSwitches, setTabSwitches] = useState(initialTabSwitches);
   const [timeLeft, setTimeLeft] = useState(questions[0].time_limit_seconds);
@@ -89,10 +87,7 @@ export function QuizRunner({
         timeTaken
       );
       setScore(result.total_score);
-      setFeedback({
-        isCorrect: result.is_correct,
-        points: result.points_awarded,
-      });
+      setFeedback({ points: result.points_awarded });
     } catch {
       toast.error("Erro ao registrar resposta. Tente novamente.");
       setLocked(false);
@@ -212,7 +207,6 @@ export function QuizRunner({
           <div className="grid gap-2">
             {options.map((option) => {
               const isSelected = selected === option.key;
-              const showResult = locked && feedback;
               return (
                 <button
                   key={option.key}
@@ -221,12 +215,8 @@ export function QuizRunner({
                   onClick={() => setSelected(option.key)}
                   className={cn(
                     "flex items-center gap-3 rounded-lg border px-4 py-3 text-left text-sm transition-colors",
-                    !locked && isSelected && "border-primary bg-accent",
-                    !locked && !isSelected && "hover:bg-accent/50",
-                    showResult && isSelected && feedback?.isCorrect &&
-                      "border-emerald-500 bg-emerald-500/10",
-                    showResult && isSelected && !feedback?.isCorrect &&
-                      "border-destructive bg-destructive/10"
+                    isSelected && "border-primary bg-accent",
+                    !locked && !isSelected && "hover:bg-accent/50"
                   )}
                 >
                   <span className="flex size-6 shrink-0 items-center justify-center rounded-full border text-xs font-semibold uppercase">
@@ -239,15 +229,8 @@ export function QuizRunner({
           </div>
 
           {feedback && (
-            <p
-              className={cn(
-                "text-sm font-medium",
-                feedback.isCorrect ? "text-emerald-600" : "text-destructive"
-              )}
-            >
-              {feedback.isCorrect
-                ? `Resposta correta! +${feedback.points} pontos`
-                : "Resposta incorreta."}
+            <p className="text-sm font-medium text-muted-foreground">
+              +{feedback.points} pts registrado
             </p>
           )}
 

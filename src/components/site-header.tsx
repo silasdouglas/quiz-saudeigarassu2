@@ -9,6 +9,7 @@ import {
   LogOut,
   HelpCircle,
   Settings,
+  KeyRound,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { logout } from "@/app/login/actions";
@@ -56,7 +57,7 @@ export function SiteHeader({ profile }: { profile: Profile }) {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-accent",
+                  "cursor-pointer rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-accent",
                   pathname.startsWith(item.href)
                     ? "bg-accent text-accent-foreground"
                     : "text-muted-foreground"
@@ -69,7 +70,7 @@ export function SiteHeader({ profile }: { profile: Profile }) {
               <Link
                 href="/admin"
                 className={cn(
-                  "flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-accent",
+                  "flex cursor-pointer items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:bg-accent",
                   pathname.startsWith("/admin")
                     ? "bg-accent text-accent-foreground"
                     : "text-muted-foreground"
@@ -81,10 +82,15 @@ export function SiteHeader({ profile }: { profile: Profile }) {
             )}
           </nav>
 
+          {/* Divider between nav and profile dropdown */}
+          {profile.role === "admin" && (
+            <span className="mr-1 hidden h-5 w-px bg-border sm:block" />
+          )}
+
           {/* Profile dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button className="flex items-center gap-1.5 rounded-lg px-2 py-1 text-sm hover:bg-accent transition-colors">
+              <button className="flex cursor-pointer items-center gap-1.5 rounded-lg px-2 py-1 text-sm hover:bg-accent transition-colors">
                 {profile.avatar_url ? (
                   <img
                     src={profile.avatar_url}
@@ -110,25 +116,34 @@ export function SiteHeader({ profile }: { profile: Profile }) {
               {/* Mobile-only nav items */}
               <div className="sm:hidden">
                 {navItems.map((item) => (
-                  <DropdownMenuItem key={item.href} asChild>
+                  <DropdownMenuItem key={item.href} asChild className="cursor-pointer">
                     <Link href={item.href}>{item.label}</Link>
                   </DropdownMenuItem>
                 ))}
                 {profile.role === "admin" && (
-                  <DropdownMenuItem asChild>
-                    <Link href="/admin">Admin</Link>
+                  <DropdownMenuItem asChild className="cursor-pointer">
+                    <Link href="/admin">
+                      <ShieldCheck className="size-4" />
+                      Admin
+                    </Link>
                   </DropdownMenuItem>
                 )}
                 <DropdownMenuSeparator />
               </div>
 
-              <DropdownMenuItem asChild className="gap-2 cursor-pointer">
+              <DropdownMenuItem asChild className="cursor-pointer gap-2">
                 <Link href="/settings" className="flex items-center gap-2">
                   <Settings className="size-4" />
                   Configurações
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem className="gap-2 cursor-pointer">
+              <DropdownMenuItem asChild className="cursor-pointer gap-2">
+                <Link href="/settings?section=senha" className="flex items-center gap-2">
+                  <KeyRound className="size-4" />
+                  Trocar senha
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem className="cursor-pointer gap-2">
                 <HelpCircle className="size-4" />
                 Ajuda
               </DropdownMenuItem>
@@ -137,7 +152,7 @@ export function SiteHeader({ profile }: { profile: Profile }) {
                 <DropdownMenuItem asChild>
                   <button
                     type="submit"
-                    className="w-full gap-2 text-destructive focus:text-destructive cursor-pointer"
+                    className="w-full cursor-pointer gap-2 text-destructive focus:text-destructive"
                   >
                     <LogOut className="size-4" />
                     Sair

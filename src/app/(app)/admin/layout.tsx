@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { LayoutDashboard, Tag, HelpCircle, CalendarDays, Settings2 } from "lucide-react";
+import { LayoutDashboard, Tag, HelpCircle, Settings2 } from "lucide-react";
 import { requireAdmin } from "@/lib/dal";
 import { AdminNavLink } from "@/components/admin/admin-nav-link";
 
@@ -7,7 +7,6 @@ const navItems = [
   { href: "/admin", label: "Dashboard", icon: <LayoutDashboard className="size-4 shrink-0" /> },
   { href: "/admin/categories", label: "Categorias", icon: <Tag className="size-4 shrink-0" /> },
   { href: "/admin/questions", label: "Perguntas", icon: <HelpCircle className="size-4 shrink-0" /> },
-  { href: "/admin/schedule", label: "Agendamento", icon: <CalendarDays className="size-4 shrink-0" /> },
   { href: "/admin/settings", label: "Configurações", icon: <Settings2 className="size-4 shrink-0" /> },
 ];
 
