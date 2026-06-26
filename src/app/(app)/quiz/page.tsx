@@ -84,17 +84,30 @@ export default async function QuizPage() {
   if (schedule) {
     const { data: rows } = await supabase
       .from("schedule_questions")
-      .select("questions(time_limit_seconds)")
+      .select("questions(time_limit_seconds, target_role)")
       .eq("schedule_id", schedule.id);
 
-    questionCount = rows?.length ?? 0;
-    estimatedSeconds =
-      rows?.reduce((sum, row) => {
-        const q = row.questions as unknown as
-          | { time_limit_seconds: number }
-          | null;
-        return sum + (q?.time_limit_seconds ?? 60);
-      }, 0) ?? 0;
+    // Match the play page: admins see every função, users only their own.
+    const visible = (rows ?? []).filter((row) => {
+      const q = row.questions as unknown as
+        | { target_role?: string | null }
+        | null;
+      if (!q) return false;
+      return (
+        isAdmin ||
+        !q.target_role ||
+        q.target_role === "ambos" ||
+        q.target_role === profile.funcao
+      );
+    });
+
+    questionCount = visible.length;
+    estimatedSeconds = visible.reduce((sum, row) => {
+      const q = row.questions as unknown as
+        | { time_limit_seconds: number }
+        | null;
+      return sum + (q?.time_limit_seconds ?? 60);
+    }, 0);
   }
 
   const settings = settingsResult.data;

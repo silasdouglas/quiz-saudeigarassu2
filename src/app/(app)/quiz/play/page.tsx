@@ -88,6 +88,15 @@ export default async function QuizPlayPage() {
       } as QuestionRow;
     })
     .filter((q): q is QuestionRow => q !== null)
+    // Admins answer questions of every função; regular users only get questions
+    // targeted at their função (or "ambos").
+    .filter(
+      (q) =>
+        profile.role === "admin" ||
+        !q.target_role ||
+        q.target_role === "ambos" ||
+        q.target_role === profile.funcao
+    )
     .sort((a, b) => DIFFICULTY_ORDER[a.difficulty] - DIFFICULTY_ORDER[b.difficulty]);
 
   const { data: answered } = await supabase
