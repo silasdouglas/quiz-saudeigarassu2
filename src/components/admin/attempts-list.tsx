@@ -1,0 +1,198 @@
+"use client";
+
+import { useMemo, useState } from "react";
+import Link from "next/link";
+import { Search } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { AttemptAnswersDialog } from "@/components/admin/attempt-answers-dialog";
+import { ResetAttemptButton } from "@/components/admin/reset-attempt-button";
+
+export interface AdminAttemptRow {
+  attempt_id: string;
+  user_id: string;
+  full_name: string;
+  email: string;
+  funcao: "tecnico_enfermagem" | "enfermeira" | null;
+  role: "admin" | "user";
+  week_start: string;
+  status: "in_progress" | "completed";
+  total_score: number;
+  total_time_seconds: number;
+  tab_switch_count: number;
+  started_at: string;
+  finished_at: string | null;
+  answered_count: number;
+  correct_count: number;
+}
+
+const FUNCAO_LABEL: Record<string, string> = {
+  tecnico_enfermagem: "Técnico",
+  enfermeira: "Enfermeira(o)",
+};
+
+function formatWeek(dateStr: string): string {
+  const [y, m, d] = dateStr.split("-").map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+}
+
+export function AttemptsList({ rows }: { rows: AdminAttemptRow[] }) {
+  const [query, setQuery] = useState("");
+  const [week, setWeek] = useState("all");
+
+  const weeks = useMemo(() => {
+    return Array.from(new Set(rows.map((r) => r.week_start))).sort((a, b) =>
+      b.localeCompare(a)
+    );
+  }, [rows]);
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return rows.filter((r) => {
+      if (week !== "all" && r.week_start !== week) return false;
+      if (!q) return true;
+      return (
+        r.full_name.toLowerCase().includes(q) ||
+        r.email.toLowerCase().includes(q)
+      );
+    });
+  }, [rows, query, week]);
+
+  return (
+    <div>
+      <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Pesquisar por nome ou e-mail…"
+            className="pl-9"
+          />
+        </div>
+        <Select value={week} onValueChange={setWeek}>
+          <SelectTrigger className="sm:w-56">
+            <SelectValue placeholder="Semana" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todas as semanas</SelectItem>
+            {weeks.map((w) => (
+              <SelectItem key={w} value={w}>
+                {formatWeek(w)}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <p className="mb-2 text-xs text-muted-foreground">
+        {filtered.length} tentativa(s)
+      </p>
+
+      {filtered.length === 0 ? (
+        <p className="rounded-lg border border-dashed p-8 text-center text-sm text-muted-foreground">
+          Nenhuma tentativa encontrada.
+        </p>
+      ) : (
+        <div className="overflow-x-auto rounded-lg border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Usuário</TableHead>
+                <TableHead>Semana</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-right">Pontos</TableHead>
+                <TableHead className="text-right">Acertos</TableHead>
+                <TableHead className="text-right">Tempo</TableHead>
+                <TableHead className="text-right">Ações</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filtered.map((r) => (
+                <TableRow key={r.attempt_id}>
+                  <TableCell>
+                    <Link
+                      href={`/admin/attempts/${r.user_id}`}
+                      className="flex flex-col hover:underline"
+                    >
+                      <span className="font-medium">
+                        {r.full_name || r.email}
+                      </span>
+                      <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                        {r.email}
+                        {r.role === "admin" && (
+                          <Badge variant="secondary" className="text-[10px]">
+                            admin
+                          </Badge>
+                        )}
+                        {r.funcao && (
+                          <Badge variant="outline" className="text-[10px]">
+                            {FUNCAO_LABEL[r.funcao]}
+                          </Badge>
+                        )}
+                      </span>
+                    </Link>
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap text-sm">
+                    {formatWeek(r.week_start)}
+                  </TableCell>
+                  <TableCell>
+                    {r.status === "completed" ? (
+                      <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-200">
+                        Concluído
+                      </Badge>
+                    ) : (
+                      <Badge variant="outline" className="text-amber-600 border-amber-300">
+                        Em andamento
+                      </Badge>
+                    )}
+                  </TableCell>
+                  <TableCell className="text-right font-semibold tabular-nums">
+                    {r.total_score}
+                  </TableCell>
+                  <TableCell className="text-right tabular-nums">
+                    {r.correct_count}/{r.answered_count}
+                  </TableCell>
+                  <TableCell className="text-right tabular-nums text-sm text-muted-foreground">
+                    {Math.round(r.total_time_seconds)}s
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center justify-end gap-0.5">
+                      <AttemptAnswersDialog
+                        attemptId={r.attempt_id}
+                        userName={r.full_name || r.email}
+                      />
+                      <ResetAttemptButton
+                        attemptId={r.attempt_id}
+                        userName={r.full_name || r.email}
+                      />
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      )}
+    </div>
+  );
+}
