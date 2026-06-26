@@ -372,9 +372,10 @@ export function QuizRunner({
                     handleSubmit(option.key);
                   }}
                   className={cn(
-                    "flex items-center gap-3 rounded-lg border px-4 py-3 text-left text-sm transition-colors",
-                    !locked && "cursor-pointer",
+                    "flex touch-manipulation select-none items-center gap-3 rounded-lg border px-4 py-3 text-left text-sm transition-[colors,transform]",
+                    !locked && "cursor-pointer active:scale-[0.98] active:bg-accent",
                     isSelected && !locked && "border-primary bg-accent",
+                    locked && isSelected && !feedback && "border-primary bg-accent",
                     locked &&
                       isSelected &&
                       feedback?.correct &&
