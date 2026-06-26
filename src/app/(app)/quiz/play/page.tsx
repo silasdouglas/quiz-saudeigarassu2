@@ -42,7 +42,7 @@ export default async function QuizPlayPage() {
   const { data: rows } = await supabase
     .from("schedule_questions")
     .select(
-      "questions(id, question_text, option_a, option_b, option_c, option_d, difficulty, points, time_limit_seconds)"
+      "questions(id, question_text, option_a, option_b, option_c, option_d, difficulty, points, time_limit_seconds, target_role, categories(name))"
     )
     .eq("schedule_id", schedule.id);
 
@@ -56,10 +56,30 @@ export default async function QuizPlayPage() {
     difficulty: Difficulty;
     points: number;
     time_limit_seconds: number;
+    target_role?: string;
+    category_name?: string;
   };
 
+  type RawQuestion = QuestionRow & { categories?: { name: string } | null };
+
   const allQuestions = (rows ?? [])
-    .map((row) => row.questions as unknown as QuestionRow | null)
+    .map((row) => {
+      const q = row.questions as unknown as RawQuestion | null;
+      if (!q) return null;
+      return {
+        id: q.id,
+        question_text: q.question_text,
+        option_a: q.option_a,
+        option_b: q.option_b,
+        option_c: q.option_c,
+        option_d: q.option_d,
+        difficulty: q.difficulty,
+        points: q.points,
+        time_limit_seconds: q.time_limit_seconds,
+        target_role: q.target_role ?? undefined,
+        category_name: q.categories?.name ?? undefined,
+      } as QuestionRow;
+    })
     .filter((q): q is QuestionRow => q !== null)
     .sort((a, b) => DIFFICULTY_ORDER[a.difficulty] - DIFFICULTY_ORDER[b.difficulty]);
 
@@ -87,7 +107,6 @@ export default async function QuizPlayPage() {
       totalQuestionCount={allQuestions.length}
       initialScore={attempt.total_score}
       initialTabSwitches={attempt.tab_switch_count}
-      tabSwitchPenaltyPoints={settings?.tab_switch_penalty_points ?? 5}
       maxTabSwitches={settings?.max_tab_switches ?? 3}
     />
   );

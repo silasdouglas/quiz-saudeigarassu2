@@ -54,3 +54,32 @@ export async function deleteSchedule(scheduleId: string): Promise<void> {
   await supabase.from("weekly_schedules").delete().eq("id", scheduleId);
   revalidatePath("/admin/schedule");
 }
+
+export async function syncAllToSchedule(scheduleId: string): Promise<void> {
+  await requireAdmin();
+  const supabase = await createClient();
+
+  const { data: existing } = await supabase
+    .from("schedule_questions")
+    .select("question_id")
+    .eq("schedule_id", scheduleId);
+
+  const existingIds = new Set((existing ?? []).map((r) => r.question_id));
+
+  const { data: allActive } = await supabase
+    .from("questions")
+    .select("id")
+    .eq("active", true);
+
+  const toAdd = (allActive ?? [])
+    .map((q) => q.id)
+    .filter((id) => !existingIds.has(id));
+
+  if (!toAdd.length) return;
+
+  await supabase
+    .from("schedule_questions")
+    .insert(toAdd.map((question_id) => ({ schedule_id: scheduleId, question_id })));
+
+  revalidatePath("/admin/questions");
+}

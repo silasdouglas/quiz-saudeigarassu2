@@ -60,6 +60,7 @@ export function QuestionFormDialog({ question, questionAnswer, categories }: Pro
     question?.category_id ?? NONE_CATEGORY
   );
   const [active, setActive] = useState<boolean>(question?.active ?? true);
+  const [targetRole, setTargetRole] = useState<string>(question?.target_role ?? "ambos");
 
   // Reset controlled state when dialog opens for this specific question
   useEffect(() => {
@@ -68,6 +69,7 @@ export function QuestionFormDialog({ question, questionAnswer, categories }: Pro
       setCorrectOption(questionAnswer?.correct_option ?? "a");
       setCategoryId(question?.category_id ?? NONE_CATEGORY);
       setActive(question?.active ?? true);
+      setTargetRole(question?.target_role ?? "ambos");
     }
   }, [open, question, questionAnswer]);
 
@@ -113,6 +115,7 @@ export function QuestionFormDialog({ question, questionAnswer, categories }: Pro
             value={categoryId === NONE_CATEGORY ? "" : categoryId}
           />
           {active && <input type="hidden" name="active" value="on" />}
+          <input type="hidden" name="target_role" value={targetRole} />
 
           <DialogHeader className="space-y-0 border-b bg-gradient-to-br from-primary/10 via-primary/5 to-transparent px-6 py-5">
             <div className="flex items-center gap-3">
@@ -266,6 +269,20 @@ export function QuestionFormDialog({ question, questionAnswer, categories }: Pro
                   required
                   className="bg-card"
                 />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-sm font-semibold">Para qual função</Label>
+                <Select value={targetRole} onValueChange={setTargetRole}>
+                  <SelectTrigger className="w-full bg-card">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ambos">Todos</SelectItem>
+                    <SelectItem value="tecnico_enfermagem">Técnico de Enfermagem</SelectItem>
+                    <SelectItem value="enfermeira">Enfermeira(o)</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 

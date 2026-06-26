@@ -9,6 +9,7 @@ import {
   createSchedule,
   deleteSchedule,
   removeQuestion,
+  syncAllToSchedule,
 } from "@/app/(app)/admin/schedule/actions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -28,7 +29,7 @@ import type {
   QuestionAnswer,
   WeeklySchedule,
 } from "@/lib/types";
-import { CalendarDays, Clock, Search } from "lucide-react";
+import { CalendarDays, Clock, LayoutGrid, Pill, RefreshCw, Search, ShieldCheck, Stethoscope, Syringe } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const DIFFICULTY_BADGE_CLASS: Record<Difficulty, string> = {
@@ -93,10 +94,17 @@ export default async function AdminQuestionsPage({
 
   const supabase = await createClient();
 
-  const { data: categories } = await supabase
-    .from("categories")
-    .select("*")
-    .order("name");
+  const [{ data: categories }, { data: catCounts }, { count: totalCount }] = await Promise.all([
+    supabase.from("categories").select("*").order("name"),
+    supabase.from("questions").select("category_id, categories(name)").eq("active", true),
+    supabase.from("questions").select("*", { count: "exact", head: true }),
+  ]);
+
+  const countsByCategory = (categories ?? []).map((cat) => ({
+    id: cat.id,
+    name: cat.name,
+    count: (catCounts ?? []).filter((q) => q.category_id === cat.id).length,
+  }));
 
   // ── TAB NAV ──────────────────────────────────────────────────────────────
   const TabNav = (
@@ -206,6 +214,14 @@ export default async function AdminQuestionsPage({
                     scheduleId={currentSchedule.id}
                     questions={availableQuestions}
                   />
+                  {availableQuestions.length > 0 && (
+                    <form action={syncAllToSchedule.bind(null, currentSchedule.id)}>
+                      <Button type="submit" variant="outline" size="sm" className="gap-1.5">
+                        <RefreshCw className="size-3.5" />
+                        Sincronizar todas ({availableQuestions.length})
+                      </Button>
+                    </form>
+                  )}
                   <ConfirmDeleteButton
                     itemLabel="este agendamento"
                     action={deleteSchedule.bind(null, currentSchedule.id)}
@@ -402,6 +418,46 @@ export default async function AdminQuestionsPage({
         </div>
         <QuestionFormDialog categories={(categories as Category[]) ?? []} />
       </div>
+
+      {/* Stat cards */}
+      {(() => {
+        const CAT_STYLE: Record<string, { icon: React.ReactNode; bg: string; iconBg: string; iconColor: string }> = {
+          "Vacinas e Imunização":       { icon: <Syringe className="size-5" />,     bg: "bg-blue-50 dark:bg-blue-950/40",    iconBg: "bg-blue-100 dark:bg-blue-900/60",   iconColor: "text-blue-600 dark:text-blue-400" },
+          "Técnica de Administração":   { icon: <Stethoscope className="size-5" />, bg: "bg-amber-50 dark:bg-amber-950/40",  iconBg: "bg-amber-100 dark:bg-amber-900/60", iconColor: "text-amber-600 dark:text-amber-400" },
+          "Farmacologia":               { icon: <Pill className="size-5" />,        bg: "bg-purple-50 dark:bg-purple-950/40",iconBg: "bg-purple-100 dark:bg-purple-900/60",iconColor: "text-purple-600 dark:text-purple-400" },
+          "Biossegurança":              { icon: <ShieldCheck className="size-5" />, bg: "bg-rose-50 dark:bg-rose-950/40",    iconBg: "bg-rose-100 dark:bg-rose-900/60",   iconColor: "text-rose-600 dark:text-rose-400" },
+        };
+        const fallback = { icon: <LayoutGrid className="size-5" />, bg: "bg-muted/50", iconBg: "bg-muted", iconColor: "text-muted-foreground" };
+        return (
+          <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-5">
+            <div className="rounded-xl border bg-primary/8 p-4">
+              <p className="text-xs font-semibold uppercase tracking-wide text-primary/70 mb-2">Total</p>
+              <div className="flex items-center justify-between">
+                <p className="text-3xl font-bold text-primary">{totalCount ?? 0}</p>
+                <div className="flex size-9 items-center justify-center rounded-lg bg-primary/15 text-primary">
+                  <LayoutGrid className="size-4" />
+                </div>
+              </div>
+              <p className="text-xs text-primary/60 mt-1">perguntas ativas</p>
+            </div>
+            {countsByCategory.map((cat) => {
+              const s = CAT_STYLE[cat.name] ?? fallback;
+              return (
+                <div key={cat.id} className={`rounded-xl border p-4 ${s.bg}`}>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2 leading-tight">{cat.name}</p>
+                  <div className="flex items-center justify-between">
+                    <p className={`text-3xl font-bold ${s.iconColor}`}>{cat.count}</p>
+                    <div className={`flex size-9 shrink-0 items-center justify-center rounded-lg ${s.iconBg} ${s.iconColor}`}>
+                      {s.icon}
+                    </div>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">perguntas</p>
+                </div>
+              );
+            })}
+          </div>
+        );
+      })()}
 
       {/* Filters */}
       <form method="GET" action="/admin/questions" className="flex flex-wrap gap-2">

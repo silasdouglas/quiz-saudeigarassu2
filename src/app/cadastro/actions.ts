@@ -11,12 +11,14 @@ export async function register(
 ): Promise<RegisterState> {
   const fullName = String(formData.get("full_name") ?? "").trim();
   const matricula = String(formData.get("matricula") ?? "").trim();
+  const funcao = String(formData.get("funcao") ?? "").trim();
   const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "");
   const confirmPassword = String(formData.get("confirm_password") ?? "");
 
   if (!fullName) return { error: "Informe seu nome completo." };
   if (!matricula) return { error: "Informe sua matrícula." };
+  if (!funcao || !['tecnico_enfermagem', 'enfermeira'].includes(funcao)) return { error: "Selecione sua função." };
   if (!email) return { error: "Informe seu e-mail." };
   if (password.length < 6) return { error: "A senha deve ter no mínimo 6 caracteres." };
   if (password !== confirmPassword) return { error: "As senhas não coincidem." };
@@ -35,7 +37,7 @@ export async function register(
     email,
     password,
     options: {
-      data: { full_name: fullName, matricula },
+      data: { full_name: fullName, matricula, funcao },
     },
   });
 

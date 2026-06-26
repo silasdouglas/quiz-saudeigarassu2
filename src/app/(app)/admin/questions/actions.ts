@@ -20,6 +20,7 @@ function parseQuestionForm(formData: FormData) {
     category_id: categoryId || null,
     time_limit_seconds: Number(formData.get("time_limit_seconds") ?? 60),
     active: formData.get("active") === "on",
+    target_role: String(formData.get("target_role") ?? "ambos") as "tecnico_enfermagem" | "enfermeira" | "ambos",
   };
 }
 
@@ -61,6 +62,7 @@ export async function createQuestion(
       category_id: fields.category_id,
       time_limit_seconds: fields.time_limit_seconds,
       active: fields.active,
+      target_role: fields.target_role,
       created_by: admin.id,
     })
     .select("id")
@@ -105,6 +107,7 @@ export async function updateQuestion(
       category_id: fields.category_id,
       time_limit_seconds: fields.time_limit_seconds,
       active: fields.active,
+      target_role: fields.target_role,
     })
     .eq("id", id);
 

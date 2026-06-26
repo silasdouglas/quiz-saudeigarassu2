@@ -2,12 +2,13 @@
 
 import { useActionState, useRef, useState } from "react";
 import { Camera, KeyRound, Eye, EyeOff, User } from "lucide-react";
-import { updateAvatar, updatePassword } from "./actions";
+import { updateAvatar, updatePassword, updateProfile } from "./actions";
 import { cn } from "@/lib/utils";
 import type { Profile } from "@/lib/types";
 
 type AvatarState = { error?: string; success?: boolean };
 type PasswordState = { error?: string; success?: boolean };
+type ProfileState = { error?: string; emailPending?: boolean; success?: boolean };
 type Section = "conta" | "seguranca";
 
 const SECTIONS: { value: Section; label: string; icon: React.ReactNode }[] = [
@@ -45,8 +46,18 @@ export function SettingsForm({
     {}
   );
 
+  const [profileState, profileAction, profilePending] = useActionState<ProfileState, FormData>(
+    async (_prev, formData) => {
+      const result = await updateProfile(formData);
+      if (!result.error && !result.emailPending) return { success: true };
+      return result;
+    },
+    {}
+  );
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(null);
+  const [fileError, setFileError] = useState<string | null>(null);
   const [showCurrent, setShowCurrent] = useState(false);
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -54,6 +65,13 @@ export function SettingsForm({
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      setFileError("Imagem muito grande. Escolha um arquivo com até 5 MB.");
+      setPreview(null);
+      e.target.value = "";
+      return;
+    }
+    setFileError(null);
     setPreview(URL.createObjectURL(file));
   }
 
@@ -121,7 +139,7 @@ export function SettingsForm({
 
                 <div className="flex flex-1 flex-col gap-2 text-center sm:text-left">
                   <p className="text-sm font-medium">Escolher imagem</p>
-                  <p className="text-xs text-muted-foreground">JPG, PNG, WebP ou HEIC. Máximo 2 MB.</p>
+                  <p className="text-xs text-muted-foreground">JPG, PNG, WebP ou HEIC. Máximo 5 MB.</p>
                   <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
@@ -141,9 +159,9 @@ export function SettingsForm({
                 onChange={handleFileChange}
               />
 
-              {avatarState?.error && (
+              {(fileError ?? avatarState?.error) && (
                 <p className="rounded-lg bg-destructive/10 px-4 py-2 text-sm text-destructive">
-                  {avatarState.error}
+                  {fileError ?? avatarState?.error}
                 </p>
               )}
               {avatarState?.success && !avatarState?.error && (
@@ -154,33 +172,74 @@ export function SettingsForm({
 
               <button
                 type="submit"
-                disabled={avatarPending || !preview}
+                disabled={avatarPending || !preview || !!fileError}
                 className="w-full cursor-pointer rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {avatarPending ? "Salvando..." : "Salvar foto"}
               </button>
             </form>
 
-            <div className="space-y-4 border-t pt-6">
+            <form action={profileAction} className="space-y-4 border-t pt-6">
               <h2 className="font-semibold">Dados da conta</h2>
               <div className="space-y-3">
-                {[
-                  { label: "Nome completo", value: profile.full_name },
-                  { label: "E-mail", value: profile.email },
-                  {
-                    label: "Perfil",
-                    value: profile.role === "admin" ? "Administrador" : "Usuário",
-                  },
-                ].map((field) => (
-                  <div key={field.label}>
-                    <label className="mb-1 block text-xs font-medium text-muted-foreground">
-                      {field.label}
-                    </label>
-                    <div className="rounded-lg border bg-muted/40 px-3 py-2 text-sm">{field.value}</div>
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-muted-foreground">
+                    Nome completo
+                  </label>
+                  <input
+                    name="full_name"
+                    type="text"
+                    defaultValue={profile.full_name}
+                    className="h-9 w-full rounded-lg border border-input bg-transparent px-3 text-sm outline-none transition-colors focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/25"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-muted-foreground">
+                    E-mail
+                  </label>
+                  <input
+                    name="email"
+                    type="email"
+                    defaultValue={profile.email}
+                    className="h-9 w-full rounded-lg border border-input bg-transparent px-3 text-sm outline-none transition-colors focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/25"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-muted-foreground">
+                    Perfil
+                  </label>
+                  <div className="rounded-lg border bg-muted/40 px-3 py-2 text-sm">
+                    {profile.role === "admin" ? "Administrador" : "Usuário"}
                   </div>
-                ))}
+                </div>
               </div>
-            </div>
+
+              {profileState?.emailPending && (
+                <p className="rounded-lg bg-amber-500/10 px-3 py-2 text-sm text-amber-700 dark:text-amber-400">
+                  Confirmação enviada para o novo e-mail. Verifique sua caixa de entrada.
+                </p>
+              )}
+              {profileState?.error && (
+                <p className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">
+                  {profileState.error}
+                </p>
+              )}
+              {profileState?.success && !profileState?.error && (
+                <p className="rounded-lg bg-primary/10 px-3 py-2 text-sm text-primary">
+                  Dados atualizados com sucesso!
+                </p>
+              )}
+
+              <button
+                type="submit"
+                disabled={profilePending}
+                className="w-full cursor-pointer rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {profilePending ? "Salvando..." : "Salvar alterações"}
+              </button>
+            </form>
             </div>
           )}
 

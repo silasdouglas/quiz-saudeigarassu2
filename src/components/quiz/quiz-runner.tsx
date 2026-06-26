@@ -31,6 +31,8 @@ interface PlayQuestion {
   difficulty: Difficulty;
   points: number;
   time_limit_seconds: number;
+  target_role?: string;
+  category_name?: string;
 }
 
 interface QuizRunnerProps {
@@ -39,7 +41,6 @@ interface QuizRunnerProps {
   totalQuestionCount: number;
   initialScore: number;
   initialTabSwitches: number;
-  tabSwitchPenaltyPoints: number;
   maxTabSwitches: number;
 }
 
@@ -49,7 +50,6 @@ export function QuizRunner({
   totalQuestionCount,
   initialScore,
   initialTabSwitches,
-  tabSwitchPenaltyPoints,
   maxTabSwitches,
 }: QuizRunnerProps) {
   const router = useRouter();
@@ -62,6 +62,10 @@ export function QuizRunner({
   } | null>(null);
   const [score, setScore] = useState(initialScore);
   const [tabSwitches, setTabSwitches] = useState(initialTabSwitches);
+  const [tabWarning, setTabWarning] = useState<{
+    count: number;
+    max: number;
+  } | null>(null);
   const [timeLeft, setTimeLeft] = useState(questions[0].time_limit_seconds);
   const [, setPending] = useState(false);
 
@@ -136,11 +140,16 @@ export function QuizRunner({
   }, [feedback, handleNext]);
 
   useEffect(() => {
+    if (!tabWarning) return;
+    const t = setTimeout(() => setTabWarning(null), 3000);
+    return () => clearTimeout(t);
+  }, [tabWarning]);
+
+  useEffect(() => {
     function handleVisibility() {
       if (!document.hidden) return;
       applyTabSwitchPenalty(attemptId)
         .then((res) => {
-          setScore(res.total_score);
           setTabSwitches(res.tab_switch_count);
           if (res.limit_reached) {
             toast.error(
@@ -148,9 +157,7 @@ export function QuizRunner({
             );
             router.push("/quiz");
           } else {
-            toast.warning(
-              `Troca de aba detectada: -${tabSwitchPenaltyPoints} pontos (${res.tab_switch_count}/${maxTabSwitches}).`
-            );
+            setTabWarning({ count: res.tab_switch_count, max: maxTabSwitches });
           }
         })
         .catch(() => {
@@ -160,7 +167,7 @@ export function QuizRunner({
     document.addEventListener("visibilitychange", handleVisibility);
     return () =>
       document.removeEventListener("visibilitychange", handleVisibility);
-  }, [attemptId, router, tabSwitchPenaltyPoints, maxTabSwitches]);
+  }, [attemptId, router, maxTabSwitches]);
 
   const options: { key: Option; text: string }[] = [
     { key: "a", text: currentQuestion.option_a },
@@ -188,6 +195,31 @@ export function QuizRunner({
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-10">
+      {tabWarning && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-[2px]">
+          <div className="animate-quiz-warning-in mx-4 flex flex-col items-center gap-4 rounded-2xl border border-orange-400/60 bg-background px-10 py-8 shadow-2xl shadow-orange-500/20 text-center">
+            <div className="flex size-16 items-center justify-center rounded-full bg-orange-100 dark:bg-orange-900/30">
+              <ShieldAlert className="size-9 text-orange-500" />
+            </div>
+            <div>
+              <p className="text-lg font-bold text-orange-600 dark:text-orange-400">
+                Troca de aba detectada!
+              </p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {tabWarning.count} de {tabWarning.max} trocas permitidas
+              </p>
+            </div>
+            <div className="w-full overflow-hidden rounded-full bg-orange-100 dark:bg-orange-900/30" style={{ height: 6 }}>
+              <div
+                className="h-full rounded-full bg-orange-400 transition-none"
+                style={{
+                  width: `${((tabWarning.max - tabWarning.count) / tabWarning.max) * 100}%`,
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
       <div className="mb-4 flex items-center justify-between text-sm text-muted-foreground">
         <span>
           Pergunta {answeredCount + index + 1} de {totalQuestionCount}
@@ -215,31 +247,53 @@ export function QuizRunner({
           <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center">
             {feedback.correct ? (
               <>
+                <div
+                  className="animate-quiz-ring-pulse absolute size-24 rounded-full border-4 border-emerald-400"
+                  style={{ opacity: 0 }}
+                />
+                <div
+                  className="animate-quiz-ring-pulse absolute size-24 rounded-full border-4 border-emerald-300"
+                  style={{ opacity: 0, animationDelay: "0.18s" }}
+                />
                 <div className="animate-quiz-pop flex size-24 items-center justify-center rounded-full bg-emerald-500/90 shadow-xl shadow-emerald-500/40">
                   <Check className="size-12 text-white" strokeWidth={3} />
                 </div>
-                {Array.from({ length: 14 }).map((_, i) => (
+                {feedback.points > 0 && (
+                  <div className="animate-quiz-float-score absolute text-2xl font-black text-emerald-500 drop-shadow-lg">
+                    +{feedback.points} pts
+                  </div>
+                )}
+                {Array.from({ length: 22 }).map((_, i) => (
                   <span
                     key={i}
-                    className="animate-quiz-confetti absolute top-0 block size-2 rounded-sm"
+                    className="animate-quiz-confetti absolute top-0 block rounded-sm"
                     style={{
-                      left: `${10 + (i * 80) / 14}%`,
+                      left: `${4 + (i * 92) / 22}%`,
+                      width: [10, 6, 8, 5, 9][i % 5],
+                      height: [10, 6, 4, 8, 5][i % 5],
                       backgroundColor: [
                         "#10b981",
                         "#f59e0b",
                         "#3b82f6",
                         "#ef4444",
                         "#a855f7",
-                      ][i % 5],
-                      animationDelay: `${(i % 5) * 0.06}s`,
+                        "#ec4899",
+                      ][i % 6],
+                      animationDelay: `${(i % 7) * 0.05}s`,
                     }}
                   />
                 ))}
               </>
             ) : (
-              <div className="animate-quiz-pop flex size-24 items-center justify-center rounded-full bg-destructive/90 shadow-xl shadow-destructive/40">
-                <X className="size-12 text-white" strokeWidth={3} />
-              </div>
+              <>
+                <div
+                  className="animate-quiz-ring-pulse absolute size-24 rounded-full border-4 border-destructive/60"
+                  style={{ opacity: 0 }}
+                />
+                <div className="animate-quiz-pop flex size-24 items-center justify-center rounded-full bg-destructive/90 shadow-xl shadow-destructive/40">
+                  <X className="size-12 text-white" strokeWidth={3} />
+                </div>
+              </>
             )}
           </div>
         )}
@@ -261,6 +315,28 @@ export function QuizRunner({
               <Clock className="size-4" />
               {timeLeft}s
             </span>
+          </div>
+          <div className="flex flex-wrap gap-1.5 pt-1">
+            {currentQuestion.category_name && (
+              <Badge variant="secondary" className="text-xs">
+                {currentQuestion.category_name}
+              </Badge>
+            )}
+            {(!currentQuestion.target_role || currentQuestion.target_role === "ambos") && (
+              <Badge variant="outline" className="text-xs text-muted-foreground">
+                Todos
+              </Badge>
+            )}
+            {currentQuestion.target_role === "tecnico_enfermagem" && (
+              <Badge variant="secondary" className="bg-blue-500/10 text-blue-700 dark:text-blue-300 text-xs">
+                Técnico de Enfermagem
+              </Badge>
+            )}
+            {currentQuestion.target_role === "enfermeira" && (
+              <Badge variant="secondary" className="bg-pink-500/10 text-pink-700 dark:text-pink-300 text-xs">
+                Enfermeira(o)
+              </Badge>
+            )}
           </div>
           {/* countdown bar */}
           <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-muted">

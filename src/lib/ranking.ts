@@ -4,6 +4,7 @@ export interface RankingEntry {
   avatar_url: string | null;
   score: number;
   time_seconds: number;
+  funcao?: string | null;
 }
 
 type RawAttempt = {
@@ -15,16 +16,18 @@ type RawAttempt = {
     full_name: string;
     avatar_url: string | null;
     role?: string | null;
+    funcao?: string | null;
   } | null;
 };
 
-export function buildRanking(attempts: RawAttempt[]): RankingEntry[] {
+export function buildRanking(attempts: RawAttempt[], funcaoFilter?: string): RankingEntry[] {
   const map = new Map<string, RankingEntry>();
 
   for (const a of attempts) {
     const profile = a.profiles;
     // Admins practise the quiz but never appear in the ranking.
     if (profile?.role === "admin") continue;
+    if (funcaoFilter && funcaoFilter !== "all" && profile?.funcao !== funcaoFilter) continue;
     const timeSec =
       a.started_at && a.finished_at
         ? Math.max(
@@ -48,6 +51,7 @@ export function buildRanking(attempts: RawAttempt[]): RankingEntry[] {
         avatar_url: profile?.avatar_url ?? null,
         score: a.total_score,
         time_seconds: timeSec,
+        funcao: profile?.funcao ?? null,
       });
     }
   }

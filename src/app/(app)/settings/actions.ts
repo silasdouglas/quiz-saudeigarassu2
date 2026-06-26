@@ -10,7 +10,7 @@ export async function updateAvatar(formData: FormData): Promise<{ error?: string
   const user = await requireUser();
   const file = formData.get("avatar") as File | null;
   if (!file || file.size === 0) return { error: "Selecione uma imagem." };
-  if (file.size > 2 * 1024 * 1024) return { error: "Imagem deve ter no máximo 2 MB." };
+  if (file.size > 5 * 1024 * 1024) return { error: "Imagem muito grande. Escolha um arquivo com até 5 MB." };
 
   const ext = (file.name.split(".").pop() ?? "").toLowerCase();
   const mime = file.type.toLowerCase();
@@ -21,7 +21,7 @@ export async function updateAvatar(formData: FormData): Promise<{ error?: string
 
   const finalExt = VALID_EXTS.includes(ext) ? ext : "jpg";
   const supabase = await createClient();
-  const path = `${user.id}/avatar.${finalExt}`;
+  const path = `${user.id}.${finalExt}`;
 
   const { error: uploadError } = await supabase.storage
     .from("avatars")
@@ -70,5 +70,32 @@ export async function updatePassword(formData: FormData): Promise<{ error?: stri
   const { error: updateError } = await supabase.auth.updateUser({ password: newPassword });
   if (updateError) return { error: updateError.message };
 
+  return {};
+}
+
+export async function updateProfile(formData: FormData): Promise<{ error?: string; emailPending?: boolean }> {
+  const user = await requireUser();
+  const fullName = String(formData.get("full_name") ?? "").trim();
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+
+  if (!fullName) return { error: "Nome não pode ser vazio." };
+  if (!email || !email.includes("@")) return { error: "E-mail inválido." };
+
+  const supabase = await createClient();
+
+  const { error: nameErr } = await supabase
+    .from("profiles")
+    .update({ full_name: fullName })
+    .eq("id", user.id);
+  if (nameErr) return { error: nameErr.message };
+
+  if (email !== user.email.toLowerCase()) {
+    const { error: emailErr } = await supabase.auth.updateUser({ email });
+    if (emailErr) return { error: emailErr.message };
+    revalidatePath("/", "layout");
+    return { emailPending: true };
+  }
+
+  revalidatePath("/", "layout");
   return {};
 }

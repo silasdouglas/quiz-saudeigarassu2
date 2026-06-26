@@ -15,6 +15,14 @@ const PERIODS: { value: Period; label: string }[] = [
   { value: "anual", label: "Anual" },
 ];
 
+type Funcao = "all" | "tecnico_enfermagem" | "enfermeira";
+
+const FUNCOES: { value: Funcao; label: string }[] = [
+  { value: "all", label: "Todos" },
+  { value: "tecnico_enfermagem", label: "Técnicos" },
+  { value: "enfermeira", label: "Enfermeiras" },
+];
+
 const podiumConfig = {
   1: {
     order: 2,
@@ -69,14 +77,24 @@ export function RankingSection({
 }) {
   const [periodo, setPeriodo] = useState<Period>(initialPeriodo);
   const [ranking, setRanking] = useState<RankingEntry[]>(initialRanking);
+  const [funcao, setFuncao] = useState<Funcao>("all");
   const [isPending, startTransition] = useTransition();
 
   function switchPeriodo(p: Period) {
     if (p === periodo) return;
     startTransition(async () => {
-      const data = await fetchRankingAction(p);
+      const data = await fetchRankingAction(p, funcao);
       setRanking(data);
       setPeriodo(p);
+    });
+  }
+
+  function switchFuncao(f: Funcao) {
+    if (f === funcao) return;
+    startTransition(async () => {
+      const data = await fetchRankingAction(periodo, f);
+      setRanking(data);
+      setFuncao(f);
     });
   }
 
@@ -114,6 +132,24 @@ export function RankingSection({
               )}
             >
               {p.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="flex gap-1.5">
+          {FUNCOES.map((f) => (
+            <button
+              key={f.value}
+              onClick={() => switchFuncao(f.value)}
+              className={cn(
+                "cursor-pointer rounded-full px-3.5 py-1 text-xs font-semibold transition-colors",
+                funcao === f.value
+                  ? "bg-secondary text-secondary-foreground shadow-sm"
+                  : "bg-muted text-muted-foreground hover:bg-muted/70",
+                isPending && "opacity-60"
+              )}
+            >
+              {f.label}
             </button>
           ))}
         </div>

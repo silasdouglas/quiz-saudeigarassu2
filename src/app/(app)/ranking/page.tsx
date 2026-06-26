@@ -19,12 +19,19 @@ const PERIODS = [
 
 type Period = "semanal" | "mensal" | "anual";
 
+type Funcao = "all" | "tecnico_enfermagem" | "enfermeira";
+const FUNCOES = [
+  { value: "all" as Funcao, label: "Todos" },
+  { value: "tecnico_enfermagem" as Funcao, label: "Técnicos" },
+  { value: "enfermeira" as Funcao, label: "Enfermeiras" },
+];
+
 const MEDAL: Record<number, string> = { 1: "🥇", 2: "🥈", 3: "🥉" };
 
 export default async function RankingPage({
   searchParams,
 }: {
-  searchParams: Promise<{ periodo?: string }>;
+  searchParams: Promise<{ periodo?: string; funcao?: string }>;
 }) {
   await requireUser();
   const supabase = await createClient();
@@ -36,11 +43,17 @@ export default async function RankingPage({
       : "semanal"
   ) as Period;
 
+  const funcao = (
+    ["all", "tecnico_enfermagem", "enfermeira"].includes(params.funcao as string)
+      ? params.funcao
+      : "all"
+  ) as Funcao;
+
   const { start, end } = periodRange(periodo);
 
   const query = supabase
     .from("quiz_attempts")
-    .select("user_id, total_score, started_at, finished_at, profiles(full_name, avatar_url, role)")
+    .select("user_id, total_score, started_at, finished_at, profiles(full_name, avatar_url, role, funcao)")
     .eq("status", "completed");
 
   const { data } =
@@ -48,7 +61,7 @@ export default async function RankingPage({
       ? await query.eq("week_start", start)
       : await query.gte("week_start", start).lte("week_start", end);
 
-  const ranking = buildRanking((data ?? []) as unknown as Parameters<typeof buildRanking>[0]);
+  const ranking = buildRanking((data ?? []) as unknown as Parameters<typeof buildRanking>[0], funcao);
 
   return (
     <div className="mx-auto max-w-xl px-4 py-8">
@@ -72,7 +85,7 @@ export default async function RankingPage({
         {PERIODS.map((p) => (
           <Link
             key={p.value}
-            href={`/ranking?periodo=${p.value}`}
+            href={`/ranking?periodo=${p.value}&funcao=${funcao}`}
             className={cn(
               "rounded-full px-3.5 py-1 text-xs font-semibold transition-colors",
               periodo === p.value
@@ -81,6 +94,24 @@ export default async function RankingPage({
             )}
           >
             {p.label}
+          </Link>
+        ))}
+      </div>
+
+      {/* Funcao filter */}
+      <div className="mb-5 flex gap-1.5">
+        {FUNCOES.map((f) => (
+          <Link
+            key={f.value}
+            href={`/ranking?periodo=${periodo}&funcao=${f.value}`}
+            className={cn(
+              "rounded-full px-3.5 py-1 text-xs font-semibold transition-colors",
+              funcao === f.value
+                ? "bg-secondary text-secondary-foreground shadow-sm"
+                : "bg-muted text-muted-foreground hover:bg-muted/70"
+            )}
+          >
+            {f.label}
           </Link>
         ))}
       </div>

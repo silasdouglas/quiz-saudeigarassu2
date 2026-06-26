@@ -147,19 +147,67 @@
 @keyframes quiz-shake {
   0%,
   100% {
-    transform: translateX(0);
+    transform: translateX(0) rotate(0deg);
   }
-  20% {
-    transform: translateX(-8px);
+  15% {
+    transform: translateX(-12px) rotate(-1.2deg);
   }
-  40% {
-    transform: translateX(8px);
+  30% {
+    transform: translateX(12px) rotate(1.2deg);
+  }
+  45% {
+    transform: translateX(-9px) rotate(-0.6deg);
   }
   60% {
-    transform: translateX(-6px);
+    transform: translateX(9px) rotate(0.6deg);
+  }
+  75% {
+    transform: translateX(-5px);
+  }
+  90% {
+    transform: translateX(5px);
+  }
+}
+
+@keyframes quiz-float-score {
+  0% {
+    transform: translateY(0) scale(0.7);
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
   }
   80% {
-    transform: translateX(6px);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-90px) scale(1.1);
+    opacity: 0;
+  }
+}
+
+@keyframes quiz-ring-pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(2.8);
+    opacity: 0;
+  }
+}
+
+@keyframes quiz-warning-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.85) translateY(12px);
+  }
+  60% {
+    transform: scale(1.04) translateY(0);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
   }
 }
 
@@ -179,17 +227,32 @@
 }
 
 .animate-quiz-shake {
-  animation: quiz-shake 0.5s ease-in-out both;
+  animation: quiz-shake 0.55s ease-in-out both;
 }
 
 .animate-quiz-confetti {
   animation: quiz-confetti-fall 0.9s ease-in forwards;
 }
 
+.animate-quiz-float-score {
+  animation: quiz-float-score 1.3s ease-out forwards;
+}
+
+.animate-quiz-ring-pulse {
+  animation: quiz-ring-pulse 0.7s ease-out forwards;
+}
+
+.animate-quiz-warning-in {
+  animation: quiz-warning-in 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28) both;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-quiz-pop,
   .animate-quiz-shake,
-  .animate-quiz-confetti {
+  .animate-quiz-confetti,
+  .animate-quiz-float-score,
+  .animate-quiz-ring-pulse,
+  .animate-quiz-warning-in {
     animation: none;
   }
 }

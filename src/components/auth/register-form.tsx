@@ -42,6 +42,23 @@ export function RegisterForm() {
       </div>
 
       <div className="flex flex-col gap-1.5">
+        <label className="text-sm font-medium" htmlFor="funcao">
+          Função
+        </label>
+        <select
+          id="funcao"
+          name="funcao"
+          required
+          defaultValue=""
+          className="flex h-10 w-full cursor-pointer rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none ring-offset-background transition-colors focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/25"
+        >
+          <option value="" disabled>Selecione sua função</option>
+          <option value="tecnico_enfermagem">Técnico de Enfermagem</option>
+          <option value="enfermeira">Enfermeira(o)</option>
+        </select>
+      </div>
+
+      <div className="flex flex-col gap-1.5">
         <label className="text-sm font-medium" htmlFor="email">
           E-mail
         </label>

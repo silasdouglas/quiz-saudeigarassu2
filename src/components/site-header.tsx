@@ -9,6 +9,8 @@ import {
   LogOut,
   HelpCircle,
   Settings,
+  Trophy,
+  BookOpen,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { logout } from "@/app/login/actions";
@@ -111,51 +113,58 @@ export function SiteHeader({ profile }: { profile: Profile }) {
                 <ChevronDown className="size-3.5 text-primary-foreground/70" />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-52">
-              <DropdownMenuLabel className="font-normal">
-                <div className="font-semibold">{profile.full_name}</div>
-                <div className="text-xs text-muted-foreground">{profile.email}</div>
+            <DropdownMenuContent align="end" className="w-60 p-2">
+              <DropdownMenuLabel className="font-normal px-2 py-2.5">
+                <div className="font-semibold text-sm">{profile.full_name}</div>
+                <div className="text-xs text-muted-foreground mt-0.5">{profile.email}</div>
               </DropdownMenuLabel>
-              <DropdownMenuSeparator />
+              <DropdownMenuSeparator className="mx-0 my-1" />
 
               {/* Mobile-only nav items */}
               <div className="sm:hidden">
-                {navItems.map((item) => (
-                  <DropdownMenuItem key={item.href} asChild className="cursor-pointer">
-                    <Link href={item.href}>{item.label}</Link>
-                  </DropdownMenuItem>
-                ))}
+                <DropdownMenuItem asChild className="cursor-pointer gap-3 px-2 py-2.5 rounded-lg">
+                  <Link href="/quiz">
+                    <BookOpen className="size-4 shrink-0" />
+                    Quiz
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild className="cursor-pointer gap-3 px-2 py-2.5 rounded-lg">
+                  <Link href="/ranking">
+                    <Trophy className="size-4 shrink-0" />
+                    Ranking
+                  </Link>
+                </DropdownMenuItem>
                 {profile.role === "admin" && (
-                  <DropdownMenuItem asChild className="cursor-pointer">
+                  <DropdownMenuItem asChild className="cursor-pointer gap-3 px-2 py-2.5 rounded-lg">
                     <Link href="/admin">
-                      <ShieldCheck className="size-4" />
+                      <ShieldCheck className="size-4 shrink-0" />
                       Admin
                     </Link>
                   </DropdownMenuItem>
                 )}
-                <DropdownMenuSeparator />
+                <DropdownMenuSeparator className="mx-0 my-1" />
               </div>
 
-              <DropdownMenuItem asChild className="cursor-pointer gap-2">
+              <DropdownMenuItem asChild className="cursor-pointer gap-3 px-2 py-2.5 rounded-lg">
                 <Link href="/settings">
-                  <Settings className="size-4" />
+                  <Settings className="size-4 shrink-0" />
                   Configurações
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem asChild className="cursor-pointer gap-2">
+              <DropdownMenuItem asChild className="cursor-pointer gap-3 px-2 py-2.5 rounded-lg">
                 <Link href="/ajuda">
-                  <HelpCircle className="size-4" />
+                  <HelpCircle className="size-4 shrink-0" />
                   Ajuda
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuSeparator />
+              <DropdownMenuSeparator className="mx-0 my-1" />
               <form action={logout}>
                 <DropdownMenuItem asChild>
                   <button
                     type="submit"
-                    className="w-full cursor-pointer gap-2 text-destructive focus:text-destructive"
+                    className="w-full cursor-pointer gap-3 px-2 py-2.5 rounded-lg text-destructive focus:text-destructive"
                   >
-                    <LogOut className="size-4" />
+                    <LogOut className="size-4 shrink-0" />
                     Sair
                   </button>
                 </DropdownMenuItem>
