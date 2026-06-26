@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Check, Clock, ShieldAlert, X } from "lucide-react";
+import { Check, Clock, Flag, ShieldAlert, X } from "lucide-react";
 import { toast } from "sonner";
 import { playCorrect, playWrong, primeAudio } from "@/lib/sounds";
 import {
@@ -302,7 +302,19 @@ export function QuizRunner({
         >
         <CardHeader>
           <div className="flex items-center justify-between">
-            <Badge variant="outline">
+            <Badge
+              variant="outline"
+              className={cn(
+                "gap-1",
+                currentQuestion.difficulty === "facil" &&
+                  "border-emerald-300 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+                currentQuestion.difficulty === "media" &&
+                  "border-amber-300 bg-amber-500/10 text-amber-600 dark:text-amber-400",
+                currentQuestion.difficulty === "dificil" &&
+                  "border-red-300 bg-red-500/10 text-red-600 dark:text-red-400"
+              )}
+            >
+              <Flag className="size-3.5 fill-current" />
               {DIFFICULTY_LABEL[currentQuestion.difficulty]} ·{" "}
               {currentQuestion.points} pts
             </Badge>
@@ -318,7 +330,10 @@ export function QuizRunner({
           </div>
           <div className="flex flex-wrap gap-1.5 pt-1">
             {currentQuestion.category_name && (
-              <Badge variant="secondary" className="text-xs">
+              <Badge
+                variant="secondary"
+                className="border-violet-200 bg-violet-500/10 text-xs text-violet-700 dark:text-violet-300"
+              >
                 {currentQuestion.category_name}
               </Badge>
             )}

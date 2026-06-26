@@ -9,6 +9,16 @@ import {
   UserCategoryChart,
   type CategoryAccuracyPoint,
 } from "@/components/admin/user-category-chart";
+import { AttemptAnswersDialog } from "@/components/admin/attempt-answers-dialog";
+import { ResetAttemptButton } from "@/components/admin/reset-attempt-button";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { DIFFICULTY_LABEL, type Difficulty } from "@/lib/types";
 
 interface Overview {
@@ -43,10 +53,30 @@ interface DifficultyStat {
   accuracy: number;
 }
 
+interface AttemptRow {
+  attempt_id: string;
+  user_id: string;
+  week_start: string;
+  status: "in_progress" | "completed";
+  total_score: number;
+  total_time_seconds: number;
+  answered_count: number;
+  correct_count: number;
+}
+
 const FUNCAO_LABEL: Record<string, string> = {
   tecnico_enfermagem: "Técnico de Enfermagem",
   enfermeira: "Enfermeira(o)",
 };
+
+function formatWeek(dateStr: string): string {
+  const [y, m, d] = dateStr.split("-").map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+}
 
 function accuracyColor(acc: number): string {
   if (acc >= 70) return "text-emerald-600";
@@ -63,18 +93,26 @@ export default async function UserProfilePage({
   const { userId } = await params;
   const supabase = await createClient();
 
-  const [{ data: overviewRows }, { data: catRows }, { data: diffRows }] =
-    await Promise.all([
-      supabase.rpc("admin_get_user_overview", { p_user_id: userId }),
-      supabase.rpc("admin_get_user_category_stats", { p_user_id: userId }),
-      supabase.rpc("admin_get_user_difficulty_stats", { p_user_id: userId }),
-    ]);
+  const [
+    { data: overviewRows },
+    { data: catRows },
+    { data: diffRows },
+    { data: attemptRows },
+  ] = await Promise.all([
+    supabase.rpc("admin_get_user_overview", { p_user_id: userId }),
+    supabase.rpc("admin_get_user_category_stats", { p_user_id: userId }),
+    supabase.rpc("admin_get_user_difficulty_stats", { p_user_id: userId }),
+    supabase.rpc("admin_list_attempts"),
+  ]);
 
   const overview = (overviewRows?.[0] ?? null) as Overview | null;
   if (!overview) notFound();
 
   const categories = (catRows ?? []) as CategoryStat[];
   const difficulties = (diffRows ?? []) as DifficultyStat[];
+  const attempts = ((attemptRows ?? []) as AttemptRow[]).filter(
+    (a) => a.user_id === userId
+  );
 
   const overallAccuracy =
     overview.total_answers > 0
@@ -244,6 +282,72 @@ export default async function UserProfilePage({
             </CardHeader>
             <CardContent>
               <UserCategoryChart data={chartData} />
+            </CardContent>
+          </Card>
+
+          {/* Attempts + gabarito */}
+          <Card className="lg:col-span-2">
+            <CardHeader>
+              <CardTitle className="text-base">Tentativas e gabarito</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {attempts.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  Nenhuma tentativa registrada.
+                </p>
+              ) : (
+                <div className="overflow-x-auto rounded-lg border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Semana</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead className="text-right">Pontos</TableHead>
+                        <TableHead className="text-right">Acertos</TableHead>
+                        <TableHead className="text-right">Ações</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {attempts.map((a) => (
+                        <TableRow key={a.attempt_id}>
+                          <TableCell className="whitespace-nowrap text-sm">
+                            {formatWeek(a.week_start)}
+                          </TableCell>
+                          <TableCell>
+                            {a.status === "completed" ? (
+                              <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-200">
+                                Concluído
+                              </Badge>
+                            ) : (
+                              <Badge variant="outline" className="text-amber-600 border-amber-300">
+                                Em andamento
+                              </Badge>
+                            )}
+                          </TableCell>
+                          <TableCell className="text-right font-semibold tabular-nums">
+                            {a.total_score}
+                          </TableCell>
+                          <TableCell className="text-right tabular-nums">
+                            {a.correct_count}/{a.answered_count}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center justify-end gap-0.5">
+                              <AttemptAnswersDialog
+                                attemptId={a.attempt_id}
+                                userName={overview.full_name || overview.email}
+                              />
+                              <ResetAttemptButton
+                                attemptId={a.attempt_id}
+                                userName={overview.full_name || overview.email}
+                              />
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>

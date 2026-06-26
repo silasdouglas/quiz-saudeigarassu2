@@ -1,8 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Link from "next/link";
-import { Search } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { ChevronRight, Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import {
@@ -20,8 +20,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { AttemptAnswersDialog } from "@/components/admin/attempt-answers-dialog";
-import { ResetAttemptButton } from "@/components/admin/reset-attempt-button";
 
 export interface AdminAttemptRow {
   attempt_id: string;
@@ -56,6 +54,7 @@ function formatWeek(dateStr: string): string {
 }
 
 export function AttemptsList({ rows }: { rows: AdminAttemptRow[] }) {
+  const router = useRouter();
   const [query, setQuery] = useState("");
   const [week, setWeek] = useState("all");
 
@@ -123,17 +122,18 @@ export function AttemptsList({ rows }: { rows: AdminAttemptRow[] }) {
                 <TableHead className="text-right">Pontos</TableHead>
                 <TableHead className="text-right">Acertos</TableHead>
                 <TableHead className="text-right">Tempo</TableHead>
-                <TableHead className="text-right">Ações</TableHead>
+                <TableHead className="w-8" />
               </TableRow>
             </TableHeader>
             <TableBody>
               {filtered.map((r) => (
-                <TableRow key={r.attempt_id}>
+                <TableRow
+                  key={r.attempt_id}
+                  onClick={() => router.push(`/admin/attempts/${r.user_id}`)}
+                  className="cursor-pointer"
+                >
                   <TableCell>
-                    <Link
-                      href={`/admin/attempts/${r.user_id}`}
-                      className="flex flex-col hover:underline"
-                    >
+                    <div className="flex flex-col">
                       <span className="font-medium">
                         {r.full_name || r.email}
                       </span>
@@ -150,7 +150,7 @@ export function AttemptsList({ rows }: { rows: AdminAttemptRow[] }) {
                           </Badge>
                         )}
                       </span>
-                    </Link>
+                    </div>
                   </TableCell>
                   <TableCell className="whitespace-nowrap text-sm">
                     {formatWeek(r.week_start)}
@@ -175,17 +175,8 @@ export function AttemptsList({ rows }: { rows: AdminAttemptRow[] }) {
                   <TableCell className="text-right tabular-nums text-sm text-muted-foreground">
                     {Math.round(r.total_time_seconds)}s
                   </TableCell>
-                  <TableCell>
-                    <div className="flex items-center justify-end gap-0.5">
-                      <AttemptAnswersDialog
-                        attemptId={r.attempt_id}
-                        userName={r.full_name || r.email}
-                      />
-                      <ResetAttemptButton
-                        attemptId={r.attempt_id}
-                        userName={r.full_name || r.email}
-                      />
-                    </div>
+                  <TableCell className="text-right">
+                    <ChevronRight className="size-4 text-muted-foreground" />
                   </TableCell>
                 </TableRow>
               ))}
