@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Check, Eye, X } from "lucide-react";
+import { Check, FileText, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -54,7 +54,7 @@ export function AttemptAnswersDialog({
         onClick={() => handleOpen(true)}
         aria-label="Ver respostas"
       >
-        <Eye className="size-4" />
+        <FileText className="size-4" />
       </Button>
       <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
