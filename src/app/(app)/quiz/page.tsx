@@ -6,23 +6,28 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { startQuiz } from "@/app/(app)/quiz/actions";
+import { computeWeekStart } from "@/lib/week";
 
 export default async function QuizPage() {
   const profile = await requireUser();
   const supabase = await createClient();
+  const weekStart = computeWeekStart();
 
-  const { data: weekStart } = await supabase.rpc("current_week_start");
+  // attempt + settings in parallel — no waterfall
+  const [attemptResult, settingsResult] = await Promise.all([
+    supabase
+      .from("quiz_attempts")
+      .select("id, status, total_score, total_time_seconds, tab_switch_count")
+      .eq("user_id", profile.id)
+      .eq("week_start", weekStart)
+      .maybeSingle(),
+    supabase
+      .from("quiz_settings")
+      .select("tab_switch_penalty_points, max_tab_switches")
+      .single(),
+  ]);
 
-  const { data: attempt } = weekStart
-    ? await supabase
-        .from("quiz_attempts")
-        .select(
-          "id, status, total_score, total_time_seconds, tab_switch_count"
-        )
-        .eq("user_id", profile.id)
-        .eq("week_start", weekStart)
-        .maybeSingle()
-    : { data: null };
+  const attempt = attemptResult.data;
 
   const isAdmin = profile.role === "admin";
 
@@ -66,13 +71,12 @@ export default async function QuizPage() {
     );
   }
 
-  const { data: schedule } = weekStart
-    ? await supabase
-        .from("weekly_schedules")
-        .select("id")
-        .eq("week_start", weekStart)
-        .maybeSingle()
-    : { data: null };
+  // schedule query parallel with settings (already fetched above)
+  const { data: schedule } = await supabase
+    .from("weekly_schedules")
+    .select("id")
+    .eq("week_start", weekStart)
+    .maybeSingle();
 
   let questionCount = 0;
   let estimatedSeconds = 0;
@@ -93,10 +97,7 @@ export default async function QuizPage() {
       }, 0) ?? 0;
   }
 
-  const { data: settings } = await supabase
-    .from("quiz_settings")
-    .select("tab_switch_penalty_points, max_tab_switches")
-    .single();
+  const settings = settingsResult.data;
 
   const isResume = attempt?.status === "in_progress";
 

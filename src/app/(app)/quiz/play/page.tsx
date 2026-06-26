@@ -3,6 +3,7 @@ import { requireUser } from "@/lib/dal";
 import { createClient } from "@/lib/supabase/server";
 import { QuizRunner } from "@/components/quiz/quiz-runner";
 import type { Difficulty } from "@/lib/types";
+import { computeWeekStart } from "@/lib/week";
 
 const DIFFICULTY_ORDER: Record<Difficulty, number> = {
   facil: 0,
@@ -13,27 +14,33 @@ const DIFFICULTY_ORDER: Record<Difficulty, number> = {
 export default async function QuizPlayPage() {
   const profile = await requireUser();
   const supabase = await createClient();
+  const weekStart = computeWeekStart();
 
-  const { data: weekStart } = await supabase.rpc("current_week_start");
+  // attempt + schedule + settings all in parallel
+  const [attemptResult, scheduleResult, settingsResult] = await Promise.all([
+    supabase
+      .from("quiz_attempts")
+      .select("id, status, total_score, tab_switch_count")
+      .eq("user_id", profile.id)
+      .eq("week_start", weekStart)
+      .maybeSingle(),
+    supabase
+      .from("weekly_schedules")
+      .select("id")
+      .eq("week_start", weekStart)
+      .maybeSingle(),
+    supabase
+      .from("quiz_settings")
+      .select("tab_switch_penalty_points, max_tab_switches")
+      .single(),
+  ]);
 
-  const { data: attempt } = weekStart
-    ? await supabase
-        .from("quiz_attempts")
-        .select("id, status, total_score, tab_switch_count")
-        .eq("user_id", profile.id)
-        .eq("week_start", weekStart)
-        .maybeSingle()
-    : { data: null };
+  const attempt = attemptResult.data;
+  const schedule = scheduleResult.data;
 
   if (!attempt || attempt.status !== "in_progress") {
     redirect("/quiz");
   }
-
-  const { data: schedule } = await supabase
-    .from("weekly_schedules")
-    .select("id")
-    .eq("week_start", weekStart)
-    .maybeSingle();
 
   if (!schedule) {
     redirect("/quiz");
@@ -91,10 +98,7 @@ export default async function QuizPlayPage() {
   const answeredIds = new Set((answered ?? []).map((a) => a.question_id));
   const pendingQuestions = allQuestions.filter((q) => !answeredIds.has(q.id));
 
-  const { data: settings } = await supabase
-    .from("quiz_settings")
-    .select("tab_switch_penalty_points, max_tab_switches")
-    .single();
+  const settings = settingsResult.data;
 
   if (pendingQuestions.length === 0) {
     redirect("/quiz");

@@ -4,6 +4,7 @@ import { requireUser } from "@/lib/dal";
 import { createClient } from "@/lib/supabase/server";
 import { buildRanking, periodRange } from "@/lib/ranking";
 import { RankingSection } from "@/components/ranking-section";
+import { computeWeekStart } from "@/lib/week";
 
 const PERIODS = [
   { value: "semanal", label: "Semanal" },
@@ -18,10 +19,11 @@ async function fetchRanking(
   periodo: Period
 ) {
   const { start, end } = periodRange(periodo);
-
   const query = supabase
     .from("quiz_attempts")
-    .select("user_id, total_score, started_at, finished_at, profiles(full_name, avatar_url, role)")
+    .select(
+      "user_id, total_score, started_at, finished_at, profiles(full_name, avatar_url, role, funcao)"
+    )
     .eq("status", "completed");
 
   const { data } =
@@ -37,7 +39,6 @@ export default async function HomePage({
 }: {
   searchParams: Promise<{ periodo?: string }>;
 }) {
-  const profile = await requireUser();
   const supabase = await createClient();
   const params = await searchParams;
 
@@ -47,20 +48,22 @@ export default async function HomePage({
       : "semanal"
   ) as Period;
 
-  const [ranking, weekStartResult] = await Promise.all([
+  // requireUser is React-cached — fast; compute weekStart locally (no RPC round-trip)
+  const profile = await requireUser();
+  const weekStart = computeWeekStart();
+
+  // Ranking + attempt fetch in parallel — no waterfall
+  const [ranking, attemptResult] = await Promise.all([
     fetchRanking(supabase, periodo),
-    supabase.rpc("current_week_start"),
+    supabase
+      .from("quiz_attempts")
+      .select("status, total_score")
+      .eq("user_id", profile.id)
+      .eq("week_start", weekStart)
+      .maybeSingle(),
   ]);
 
-  const weekStart = weekStartResult.data as string | null;
-  const { data: attempt } = weekStart
-    ? await supabase
-        .from("quiz_attempts")
-        .select("status, total_score")
-        .eq("user_id", profile.id)
-        .eq("week_start", weekStart)
-        .maybeSingle()
-    : { data: null };
+  const attempt = attemptResult.data;
 
   const quizStatus = !attempt
     ? "disponivel"
