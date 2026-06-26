@@ -246,13 +246,32 @@
   animation: quiz-warning-in 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28) both;
 }
 
+/* ---- Login / auth screen ---- */
+@keyframes login-blob {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(24px, -32px) scale(1.08); }
+  66% { transform: translate(-18px, 18px) scale(0.94); }
+}
+@keyframes login-rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-login-blob {
+  animation: login-blob 16s ease-in-out infinite;
+}
+.animate-login-rise {
+  animation: login-rise 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-quiz-pop,
   .animate-quiz-shake,
   .animate-quiz-confetti,
   .animate-quiz-float-score,
   .animate-quiz-ring-pulse,
-  .animate-quiz-warning-in {
+  .animate-quiz-warning-in,
+  .animate-login-blob,
+  .animate-login-rise {
     animation: none;
   }
 }
