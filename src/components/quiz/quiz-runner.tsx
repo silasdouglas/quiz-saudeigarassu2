@@ -20,7 +20,7 @@ import {
   finishQuiz,
   submitAnswer,
 } from "@/app/(app)/quiz/actions";
-import { useRealtimeTable } from "@/lib/hooks/use-realtime";
+import { createClient } from "@/lib/supabase/client";
 
 interface PlayQuestion {
   id: string;
@@ -146,15 +146,24 @@ export function QuizRunner({
     return () => clearTimeout(t);
   }, [tabWarning]);
 
-  // Detect admin-initiated reset: if the attempt row is deleted or status reverts,
-  // send the user back to the quiz lobby.
-  useRealtimeTable(
-    "quiz_attempts",
-    useCallback(() => {
-      router.push("/quiz");
-    }, [router]),
-    `id=eq.${attemptId}&status=eq.in_progress`
-  );
+  // Detect admin-initiated reset (DELETE on quiz_attempts row) and redirect.
+  // Must use DELETE-only event — UPDATE fires on every score change and would
+  // incorrectly kick the user out of the quiz.
+  useEffect(() => {
+    const supabase = createClient();
+    const channel = supabase
+      .channel(`attempt-reset-${attemptId}`)
+      .on(
+        "postgres_changes",
+        { event: "DELETE", schema: "public", table: "quiz_attempts", filter: `id=eq.${attemptId}` },
+        () => {
+          toast.error("Sua tentativa foi reiniciada pelo administrador.");
+          router.push("/quiz");
+        }
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [attemptId, router]);
 
   useEffect(() => {
     function handleVisibility() {
