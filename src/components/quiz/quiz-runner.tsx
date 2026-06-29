@@ -20,6 +20,7 @@ import {
   finishQuiz,
   submitAnswer,
 } from "@/app/(app)/quiz/actions";
+import { useRealtimeTable } from "@/lib/hooks/use-realtime";
 
 interface PlayQuestion {
   id: string;
@@ -144,6 +145,16 @@ export function QuizRunner({
     const t = setTimeout(() => setTabWarning(null), 3000);
     return () => clearTimeout(t);
   }, [tabWarning]);
+
+  // Detect admin-initiated reset: if the attempt row is deleted or status reverts,
+  // send the user back to the quiz lobby.
+  useRealtimeTable(
+    "quiz_attempts",
+    useCallback(() => {
+      router.push("/quiz");
+    }, [router]),
+    `id=eq.${attemptId}&status=eq.in_progress`
+  );
 
   useEffect(() => {
     function handleVisibility() {

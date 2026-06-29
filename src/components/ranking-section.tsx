@@ -1,11 +1,12 @@
 "use client";
 
-import { useTransition, useState } from "react";
+import { useCallback, useTransition, useState } from "react";
 import Link from "next/link";
 import { Trophy, ArrowRight, Timer } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { RankingEntry } from "@/lib/ranking";
 import { fetchRankingAction } from "@/app/(app)/ranking-action";
+import { useRealtimeTable } from "@/lib/hooks/use-realtime";
 
 type Period = "semanal" | "mensal" | "anual";
 
@@ -80,6 +81,15 @@ export function RankingSection({
   const [funcao, setFuncao] = useState<Funcao>("all");
   const [isPending, startTransition] = useTransition();
 
+  const refresh = useCallback(() => {
+    startTransition(async () => {
+      const data = await fetchRankingAction(periodo, funcao);
+      setRanking(data);
+    });
+  }, [periodo, funcao]);
+
+  useRealtimeTable("quiz_attempts", refresh, "status=eq.completed");
+
   function switchPeriodo(p: Period) {
     if (p === periodo) return;
     startTransition(async () => {
@@ -108,6 +118,10 @@ export function RankingSection({
           <div className="flex items-center gap-2">
             <Trophy className="size-4 text-amber-500" />
             <h2 className="font-semibold">Ranking</h2>
+            <span className="relative flex size-2">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex size-2 rounded-full bg-emerald-500" />
+            </span>
           </div>
           <Link
             href={`/ranking?periodo=${periodo}`}

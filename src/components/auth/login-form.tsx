@@ -25,7 +25,7 @@ export function LoginForm() {
             autoComplete="email"
             required
             placeholder="seuemail@igarassu.pe.gov.br"
-            className="h-11 pl-9"
+            className="h-11 pl-9 rounded-xl border-border/60 focus-visible:border-[oklch(0.72_0.18_145)] focus-visible:ring-[oklch(0.72_0.18_145)]/20"
           />
         </div>
       </div>
@@ -41,7 +41,7 @@ export function LoginForm() {
             autoComplete="current-password"
             required
             placeholder="••••••••"
-            className="h-11 pl-9 pr-10"
+            className="h-11 pl-9 pr-10 rounded-xl border-border/60 focus-visible:border-[oklch(0.72_0.18_145)] focus-visible:ring-[oklch(0.72_0.18_145)]/20"
           />
           <button
             type="button"

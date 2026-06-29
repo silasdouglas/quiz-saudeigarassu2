@@ -1,0 +1,31 @@
+"use server";
+
+import { requireUser } from "@/lib/dal";
+import { createClient } from "@/lib/supabase/server";
+import { buildRanking, periodRange, type RankingEntry } from "@/lib/ranking";
+
+export async function fetchFullRankingAction(
+  periodo: string,
+  funcao: string
+): Promise<RankingEntry[]> {
+  await requireUser();
+  const supabase = await createClient();
+  const { start, end } = periodRange(periodo);
+
+  const query = supabase
+    .from("quiz_attempts")
+    .select(
+      "user_id, total_score, started_at, finished_at, profiles(full_name, avatar_url, role, funcao)"
+    )
+    .eq("status", "completed");
+
+  const { data } =
+    periodo === "semanal"
+      ? await query.eq("week_start", start)
+      : await query.gte("week_start", start).lte("week_start", end);
+
+  return buildRanking(
+    (data ?? []) as unknown as Parameters<typeof buildRanking>[0],
+    funcao
+  );
+}

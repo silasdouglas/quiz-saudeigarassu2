@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronRight, Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -20,24 +20,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  fetchAdminAttemptsAction,
+  type AdminAttemptRow,
+} from "@/app/(app)/admin/attempts/actions";
+import { useRealtimeTable } from "@/lib/hooks/use-realtime";
 
-export interface AdminAttemptRow {
-  attempt_id: string;
-  user_id: string;
-  full_name: string;
-  email: string;
-  funcao: "tecnico_enfermagem" | "enfermeira" | null;
-  role: "admin" | "user";
-  week_start: string;
-  status: "in_progress" | "completed";
-  total_score: number;
-  total_time_seconds: number;
-  tab_switch_count: number;
-  started_at: string;
-  finished_at: string | null;
-  answered_count: number;
-  correct_count: number;
-}
+export type { AdminAttemptRow };
 
 const FUNCAO_LABEL: Record<string, string> = {
   tecnico_enfermagem: "Técnico",
@@ -53,10 +42,21 @@ function formatWeek(dateStr: string): string {
   });
 }
 
-export function AttemptsList({ rows }: { rows: AdminAttemptRow[] }) {
+export function AttemptsList({ rows: initialRows }: { rows: AdminAttemptRow[] }) {
   const router = useRouter();
+  const [rows, setRows] = useState(initialRows);
   const [query, setQuery] = useState("");
   const [week, setWeek] = useState("all");
+  const [, startTransition] = useTransition();
+
+  const refresh = useCallback(() => {
+    startTransition(async () => {
+      const data = await fetchAdminAttemptsAction();
+      setRows(data);
+    });
+  }, []);
+
+  useRealtimeTable("quiz_attempts", refresh);
 
   const weeks = useMemo(() => {
     return Array.from(new Set(rows.map((r) => r.week_start))).sort((a, b) =>

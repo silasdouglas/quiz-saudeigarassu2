@@ -27,9 +27,13 @@ export async function proxy(request: NextRequest) {
     }
   );
 
+  // getSession() reads the JWT from the cookie locally — no network round-trip.
+  // Routing decisions (redirect to /login) are low-security; real auth verification
+  // happens in dal.ts via getUser() before any data is accessed.
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    data: { session },
+  } = await supabase.auth.getSession();
+  const user = session?.user ?? null;
 
   const { pathname } = request.nextUrl;
   const isPublic = PUBLIC_PATHS.includes(pathname);
