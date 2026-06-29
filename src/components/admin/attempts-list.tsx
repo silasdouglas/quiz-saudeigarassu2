@@ -163,7 +163,7 @@ export function AttemptsList({ rows: initialRows }: { rows: AdminAttemptRow[] })
                       </Badge>
                     ) : r.status === "reset" ? (
                       <Badge variant="outline" className="text-sky-600 border-sky-300">
-                        A fazer
+                        Pendente
                       </Badge>
                     ) : (
                       <Badge variant="outline" className="text-amber-600 border-amber-300">
