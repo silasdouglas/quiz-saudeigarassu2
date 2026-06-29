@@ -123,6 +123,10 @@ export function QuizRunner({
   }, [timeLeft, locked, handleSubmit]);
 
   const handleNext = useCallback(() => {
+    // Reset before setIndex so the next render never briefly shows stale feedback
+    setSelected(null);
+    setLocked(false);
+    setFeedback(null);
     if (index + 1 < questions.length) {
       setIndex((i) => i + 1);
     } else {
