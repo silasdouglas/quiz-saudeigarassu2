@@ -8,18 +8,24 @@ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public
 AS $$
 DECLARE
   v_attempt public.quiz_attempts;
+  v_new_count int;
 BEGIN
-  UPDATE public.quiz_attempts
-    SET tab_switch_count = tab_switch_count + 1
-    WHERE id = p_attempt_id AND user_id = auth.uid() AND status = 'in_progress'
-    RETURNING * INTO v_attempt;
+  -- Pre-calculate new count to avoid ambiguity with RETURNS TABLE output columns
+  SELECT qa.tab_switch_count + 1 INTO v_new_count
+    FROM public.quiz_attempts qa
+    WHERE qa.id = p_attempt_id AND qa.user_id = auth.uid() AND qa.status = 'in_progress';
 
-  IF v_attempt.id IS NULL THEN
+  IF v_new_count IS NULL THEN
     RAISE EXCEPTION 'attempt not found or not in progress';
   END IF;
 
+  UPDATE public.quiz_attempts
+    SET tab_switch_count = v_new_count
+    WHERE id = p_attempt_id
+    RETURNING * INTO v_attempt;
+
   -- 2nd switch: suspend with score 0
-  IF v_attempt.tab_switch_count >= 2 THEN
+  IF v_new_count >= 2 THEN
     UPDATE public.quiz_attempts
       SET status = 'completed', finished_at = now(), total_score = 0
       WHERE id = p_attempt_id
