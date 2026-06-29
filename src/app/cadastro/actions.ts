@@ -18,7 +18,7 @@ export async function register(
 
   if (!fullName) return { error: "Informe seu nome completo." };
   if (!matricula) return { error: "Informe sua matrícula." };
-  if (!funcao || !['tecnico_enfermagem', 'enfermeira'].includes(funcao)) return { error: "Selecione sua função." };
+  if (!funcao || !['tecnico', 'enfermeira'].includes(funcao)) return { error: "Selecione sua função." };
   if (!email) return { error: "Informe seu e-mail." };
   if (password.length < 6) return { error: "A senha deve ter no mínimo 6 caracteres." };
   if (password !== confirmPassword) return { error: "As senhas não coincidem." };

@@ -58,7 +58,7 @@ export async function deleteSchedule(scheduleId: string): Promise<void> {
 export async function addRandomQuestions(
   scheduleId: string,
   count: number,
-  targetRole: "all" | "tecnico_enfermagem" | "enfermeira" = "all"
+  targetRole: "all" | "tecnico" | "enfermeira" = "all"
 ): Promise<{ addedIds: string[] }> {
   await requireAdmin();
   const supabase = await createClient();
@@ -72,8 +72,8 @@ export async function addRandomQuestions(
   const previousIds = new Set((previouslyUsed ?? []).map((r) => r.question_id));
 
   let query = supabase.from("questions").select("id").eq("active", true);
-  if (targetRole === "tecnico_enfermagem") {
-    query = query.in("target_role", ["tecnico_enfermagem", "ambos"]);
+  if (targetRole === "tecnico") {
+    query = query.in("target_role", ["tecnico", "ambos"]);
   } else if (targetRole === "enfermeira") {
     query = query.in("target_role", ["enfermeira", "ambos"]);
   }

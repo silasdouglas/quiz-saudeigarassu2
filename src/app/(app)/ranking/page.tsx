@@ -15,10 +15,10 @@ const PERIODS = [
 
 type Period = "semanal" | "mensal" | "anual";
 
-type Funcao = "all" | "tecnico_enfermagem" | "enfermeira";
+type Funcao = "all" | "tecnico" | "enfermeira";
 const FUNCOES = [
   { value: "all" as Funcao, label: "Todos" },
-  { value: "tecnico_enfermagem" as Funcao, label: "Técnicos" },
+  { value: "tecnico" as Funcao, label: "Técnicos" },
   { value: "enfermeira" as Funcao, label: "Enfermeiras" },
 ];
 
@@ -39,7 +39,7 @@ export default async function RankingPage({
   ) as Period;
 
   const funcao = (
-    ["all", "tecnico_enfermagem", "enfermeira"].includes(params.funcao as string)
+    ["all", "tecnico", "enfermeira"].includes(params.funcao as string)
       ? params.funcao
       : "all"
   ) as Funcao;

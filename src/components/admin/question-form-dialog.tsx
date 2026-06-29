@@ -284,7 +284,7 @@ export function QuestionFormDialog({ question, questionAnswer, categories, open:
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="ambos">Todos</SelectItem>
-                    <SelectItem value="tecnico_enfermagem">Técnico de Enfermagem</SelectItem>
+                    <SelectItem value="tecnico">Técnico de Enfermagem</SelectItem>
                     <SelectItem value="enfermeira">Enfermeira(o)</SelectItem>
                   </SelectContent>
                 </Select>

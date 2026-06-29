@@ -40,7 +40,7 @@ const DIFFICULTY_BADGE_CLASS: Record<Difficulty, string> = {
 };
 
 const TARGET_ROLE_LABEL: Record<string, string> = {
-  tecnico_enfermagem: "Técnico",
+  tecnico: "Técnico",
   enfermeira: "Enfermeira",
   ambos: "Ambos",
 };

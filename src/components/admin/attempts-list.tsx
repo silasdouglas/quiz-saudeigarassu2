@@ -29,7 +29,7 @@ import { useRealtimeTable } from "@/lib/hooks/use-realtime";
 export type { AdminAttemptRow };
 
 const FUNCAO_LABEL: Record<string, string> = {
-  tecnico_enfermagem: "Técnico",
+  tecnico: "Técnico",
   enfermeira: "Enfermeira(o)",
 };
 

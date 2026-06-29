@@ -6,7 +6,7 @@ export interface Profile {
   email: string;
   full_name: string;
   role: "admin" | "user";
-  funcao?: 'tecnico_enfermagem' | 'enfermeira' | null;
+  funcao?: 'tecnico' | 'enfermeira' | null;
   created_at: string;
   avatar_url?: string | null;
 }
@@ -30,7 +30,7 @@ export interface Question {
   points: number;
   time_limit_seconds: number;
   active: boolean;
-  target_role?: 'tecnico_enfermagem' | 'enfermeira' | 'ambos';
+  target_role?: 'tecnico' | 'enfermeira' | 'ambos';
   created_by: string | null;
   created_at: string;
   updated_at: string;

@@ -20,7 +20,7 @@ function parseQuestionForm(formData: FormData) {
     category_id: categoryId || null,
     time_limit_seconds: Number(formData.get("time_limit_seconds") ?? 60),
     active: formData.get("active") === "on",
-    target_role: String(formData.get("target_role") ?? "ambos") as "tecnico_enfermagem" | "enfermeira" | "ambos",
+    target_role: String(formData.get("target_role") ?? "ambos") as "tecnico" | "enfermeira" | "ambos",
   };
 }
 

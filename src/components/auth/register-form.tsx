@@ -53,7 +53,7 @@ export function RegisterForm() {
           className="flex h-10 w-full cursor-pointer rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none ring-offset-background transition-colors focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/25"
         >
           <option value="" disabled>Selecione sua função</option>
-          <option value="tecnico_enfermagem">Técnico de Enfermagem</option>
+          <option value="tecnico">Técnico de Enfermagem</option>
           <option value="enfermeira">Enfermeira(o)</option>
         </select>
       </div>

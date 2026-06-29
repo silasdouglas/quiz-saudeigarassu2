@@ -10,7 +10,7 @@ export interface AdminAttemptRow {
   user_id: string;
   full_name: string;
   email: string;
-  funcao: "tecnico_enfermagem" | "enfermeira" | null;
+  funcao: "tecnico" | "enfermeira" | null;
   role: "admin" | "user";
   week_start: string;
   status: "in_progress" | "completed";

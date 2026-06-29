@@ -25,7 +25,7 @@ interface Overview {
   user_id: string;
   full_name: string;
   email: string;
-  funcao: "tecnico_enfermagem" | "enfermeira" | null;
+  funcao: "tecnico" | "enfermeira" | null;
   role: "admin" | "user";
   created_at: string;
   attempts_total: number;
@@ -65,7 +65,7 @@ interface AttemptRow {
 }
 
 const FUNCAO_LABEL: Record<string, string> = {
-  tecnico_enfermagem: "Técnico de Enfermagem",
+  tecnico: "Técnico de Enfermagem",
   enfermeira: "Enfermeira(o)",
 };
 

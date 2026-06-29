@@ -22,11 +22,11 @@ const DIFFICULTY_BADGE_CLASS: Record<Difficulty, string> = {
   dificil: "bg-red-500/10 text-red-600 border-red-200",
 };
 
-type TargetRole = "all" | "tecnico_enfermagem" | "enfermeira";
+type TargetRole = "all" | "tecnico" | "enfermeira";
 
 const ROLE_LABELS: Record<TargetRole, string> = {
   all: "Todos",
-  tecnico_enfermagem: "Técnicos",
+  tecnico: "Técnicos",
   enfermeira: "Enfermeiras",
 };
 

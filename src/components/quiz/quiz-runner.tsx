@@ -362,7 +362,7 @@ export function QuizRunner({
                 Todos
               </Badge>
             )}
-            {currentQuestion.target_role === "tecnico_enfermagem" && (
+            {currentQuestion.target_role === "tecnico" && (
               <Badge variant="secondary" className="bg-blue-500/10 text-blue-700 dark:text-blue-300 text-xs">
                 Técnico de Enfermagem
               </Badge>

@@ -16,11 +16,11 @@ const PERIODS: { value: Period; label: string }[] = [
   { value: "anual", label: "Anual" },
 ];
 
-type Funcao = "all" | "tecnico_enfermagem" | "enfermeira";
+type Funcao = "all" | "tecnico" | "enfermeira";
 
 const FUNCOES: { value: Funcao; label: string }[] = [
   { value: "all", label: "Todos" },
-  { value: "tecnico_enfermagem", label: "Técnicos" },
+  { value: "tecnico", label: "Técnicos" },
   { value: "enfermeira", label: "Enfermeiras" },
 ];
 
