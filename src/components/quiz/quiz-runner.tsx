@@ -63,10 +63,7 @@ export function QuizRunner({
   } | null>(null);
   const [score, setScore] = useState(initialScore);
   const [tabSwitches, setTabSwitches] = useState(initialTabSwitches);
-  const [tabWarning, setTabWarning] = useState<{
-    count: number;
-    max: number;
-  } | null>(null);
+  const [tabWarned, setTabWarned] = useState(initialTabSwitches >= 1);
   const [timeLeft, setTimeLeft] = useState(questions[0].time_limit_seconds);
   const [, setPending] = useState(false);
 
@@ -140,12 +137,6 @@ export function QuizRunner({
     return () => clearTimeout(t);
   }, [feedback, handleNext]);
 
-  useEffect(() => {
-    if (!tabWarning) return;
-    const t = setTimeout(() => setTabWarning(null), 3000);
-    return () => clearTimeout(t);
-  }, [tabWarning]);
-
   // Detect admin-initiated reset (DELETE on quiz_attempts row) and redirect.
   // Must use DELETE-only event — UPDATE fires on every score change and would
   // incorrectly kick the user out of the quiz.
@@ -172,12 +163,10 @@ export function QuizRunner({
         .then((res) => {
           setTabSwitches(res.tab_switch_count);
           if (res.limit_reached) {
-            toast.error(
-              "Quiz encerrado: limite de trocas de aba foi atingido."
-            );
+            toast.error("Quiz suspenso: segunda troca de aba detectada. Pontuação registrada como zero.");
             router.push("/quiz");
           } else {
-            setTabWarning({ count: res.tab_switch_count, max: maxTabSwitches });
+            setTabWarned(true);
           }
         })
         .catch(() => {
@@ -215,29 +204,13 @@ export function QuizRunner({
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-10">
-      {tabWarning && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-[2px]">
-          <div className="animate-quiz-warning-in mx-4 flex flex-col items-center gap-4 rounded-2xl border border-orange-400/60 bg-background px-10 py-8 shadow-2xl shadow-orange-500/20 text-center">
-            <div className="flex size-16 items-center justify-center rounded-full bg-orange-100 dark:bg-orange-900/30">
-              <ShieldAlert className="size-9 text-orange-500" />
-            </div>
-            <div>
-              <p className="text-lg font-bold text-orange-600 dark:text-orange-400">
-                Troca de aba detectada!
-              </p>
-              <p className="mt-1 text-sm text-muted-foreground">
-                {tabWarning.count} de {tabWarning.max} trocas permitidas
-              </p>
-            </div>
-            <div className="w-full overflow-hidden rounded-full bg-orange-100 dark:bg-orange-900/30" style={{ height: 6 }}>
-              <div
-                className="h-full rounded-full bg-orange-400 transition-none"
-                style={{
-                  width: `${((tabWarning.max - tabWarning.count) / tabWarning.max) * 100}%`,
-                }}
-              />
-            </div>
-          </div>
+      {tabWarned && (
+        <div className="mb-4 flex items-start gap-3 rounded-xl border border-orange-400/50 bg-orange-50 px-4 py-3 dark:bg-orange-950/30">
+          <ShieldAlert className="mt-px size-4 shrink-0 text-orange-500" />
+          <p className="text-sm text-orange-800 dark:text-orange-300">
+            <span className="font-semibold">Atenção:</span> troca de aba detectada.
+            Se sair novamente, o quiz será encerrado e sua pontuação será registrada como zero.
+          </p>
         </div>
       )}
       <div className="mb-4 flex items-center justify-between text-sm text-muted-foreground">
@@ -246,10 +219,10 @@ export function QuizRunner({
         </span>
         <span className="flex items-center gap-3">
           <Badge variant="secondary">{score} pts</Badge>
-          {tabSwitches > 0 && (
-            <span className="flex items-center gap-1 text-destructive">
+          {tabWarned && (
+            <span className="flex items-center gap-1 text-orange-500">
               <ShieldAlert className="size-4" />
-              {tabSwitches}/{maxTabSwitches}
+              Aviso ativo
             </span>
           )}
         </span>

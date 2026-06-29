@@ -225,11 +225,9 @@ export default async function QuizPage() {
               <AlertTriangle className="mt-px size-4 shrink-0 text-destructive" />
               <p className="text-sm text-muted-foreground">
                 <span className="font-semibold text-destructive">Não saia da aba</span>{" "}
-                durante o quiz. Cada troca desconta{" "}
-                <span className="font-medium text-foreground">{settings?.tab_switch_penalty_points ?? 5} pts</span>{" "}
-                e após{" "}
-                <span className="font-medium text-foreground">{settings?.max_tab_switches ?? 3} trocas</span>{" "}
-                o quiz é encerrado automaticamente.
+                durante o quiz. Na <span className="font-medium text-foreground">1ª troca</span> você receberá um aviso e poderá continuar.
+                Na <span className="font-medium text-foreground">2ª troca</span> o quiz é encerrado e sua pontuação é registrada como{" "}
+                <span className="font-medium text-foreground">zero</span> — sem nova tentativa até a próxima semana.
               </p>
             </div>
           </div>
