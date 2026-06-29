@@ -142,13 +142,22 @@ export function QuizRunner({
     return () => clearTimeout(t);
   }, [feedback, handleNext]);
 
-  // Detect admin-initiated reset (DELETE on quiz_attempts row) and redirect.
-  // Must use DELETE-only event — UPDATE fires on every score change and would
-  // incorrectly kick the user out of the quiz.
+  // Detect admin-initiated reset and redirect.
+  // Listen for UPDATE (status→'reset') and DELETE (legacy fallback).
   useEffect(() => {
     const supabase = createClient();
     const channel = supabase
       .channel(`attempt-reset-${attemptId}`)
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "quiz_attempts", filter: `id=eq.${attemptId}` },
+        (payload) => {
+          if ((payload.new as { status?: string })?.status === "reset") {
+            toast.error("Sua tentativa foi reiniciada pelo administrador.");
+            router.push("/quiz");
+          }
+        }
+      )
       .on(
         "postgres_changes",
         { event: "DELETE", schema: "public", table: "quiz_attempts", filter: `id=eq.${attemptId}` },

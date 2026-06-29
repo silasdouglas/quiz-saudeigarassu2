@@ -161,6 +161,10 @@ export function AttemptsList({ rows: initialRows }: { rows: AdminAttemptRow[] })
                       <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-200">
                         Concluído
                       </Badge>
+                    ) : r.status === "reset" ? (
+                      <Badge variant="outline" className="text-sky-600 border-sky-300">
+                        A fazer
+                      </Badge>
                     ) : (
                       <Badge variant="outline" className="text-amber-600 border-amber-300">
                         Em andamento

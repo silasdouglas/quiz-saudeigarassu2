@@ -13,7 +13,7 @@ export interface AdminAttemptRow {
   funcao: "tecnico" | "enfermeira" | null;
   role: "admin" | "user";
   week_start: string;
-  status: "in_progress" | "completed";
+  status: "in_progress" | "completed" | "reset";
   total_score: number;
   total_time_seconds: number;
   tab_switch_count: number;
