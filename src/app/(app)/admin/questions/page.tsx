@@ -4,6 +4,7 @@ import { requireAdmin } from "@/lib/dal";
 import { QuestionFormDialog } from "@/components/admin/question-form-dialog";
 import { ConfirmDeleteButton } from "@/components/admin/confirm-delete-button";
 import { AddQuestionToScheduleDialog } from "@/components/admin/add-question-to-schedule-dialog";
+import { ScheduleRowActions } from "@/components/admin/schedule-row-actions";
 import { deleteQuestion } from "@/app/(app)/admin/questions/actions";
 import {
   createSchedule,
@@ -160,6 +161,13 @@ export default async function AdminQuestionsPage({
         difficulty: Difficulty;
         time_limit_seconds: number;
         target_role?: string | null;
+        option_a: string;
+        option_b: string;
+        option_c: string;
+        option_d: string;
+        active: boolean;
+        category_id: string | null;
+        question_answers: Array<{ correct_option: string }> | null;
         categories: { name: string } | null;
       } | null;
     };
@@ -178,7 +186,7 @@ export default async function AdminQuestionsPage({
       const { data: sqData } = await supabase
         .from("schedule_questions")
         .select(
-          "question_id, questions(id, question_text, difficulty, time_limit_seconds, target_role, categories(name))"
+          "question_id, questions(id, question_text, difficulty, time_limit_seconds, target_role, option_a, option_b, option_c, option_d, active, category_id, question_answers(correct_option), categories(name))"
         )
         .eq("schedule_id", currentSchedule.id);
 
@@ -264,7 +272,7 @@ export default async function AdminQuestionsPage({
                       <TableHead>Dificuldade</TableHead>
                       <TableHead>Função</TableHead>
                       <TableHead>Tempo</TableHead>
-                      <TableHead className="w-16 text-right">Remover</TableHead>
+                      <TableHead className="w-20 text-center">Ações</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -304,10 +312,16 @@ export default async function AdminQuestionsPage({
                             </span>
                           </TableCell>
                           <TableCell>
-                            <div className="flex justify-end">
-                              <ConfirmDeleteButton
-                                itemLabel="a pergunta do agendamento"
-                                action={removeQuestion.bind(null, currentSchedule.id, sq.question_id)}
+                            <div className="flex justify-center">
+                              <ScheduleRowActions
+                                question={q as unknown as Question}
+                                questionAnswer={
+                                  Array.isArray(q.question_answers) && q.question_answers[0]
+                                    ? { question_id: q.id, correct_option: q.question_answers[0].correct_option as QuestionAnswer["correct_option"] }
+                                    : undefined
+                                }
+                                categories={(categories as Category[]) ?? []}
+                                removeAction={removeQuestion.bind(null, currentSchedule.id, sq.question_id)}
                               />
                             </div>
                           </TableCell>

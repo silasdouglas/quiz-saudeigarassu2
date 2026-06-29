@@ -15,24 +15,33 @@ import {
 export function ConfirmDeleteButton({
   itemLabel,
   action,
+  open: controlledOpen,
+  onOpenChange: controlledOnOpenChange,
 }: {
   itemLabel: string;
   action: () => Promise<void>;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }) {
-  const [open, setOpen] = useState(false);
+  const isControlled = controlledOpen !== undefined;
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = isControlled ? controlledOpen : internalOpen;
+  const setOpen = isControlled ? (controlledOnOpenChange ?? (() => {})) : setInternalOpen;
   const [isPending, startTransition] = useTransition();
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <Button
-        type="button"
-        variant="ghost"
-        size="icon-sm"
-        onClick={() => setOpen(true)}
-        aria-label={`Excluir ${itemLabel}`}
-      >
-        <Trash2 className="size-4 text-destructive" />
-      </Button>
+      {!isControlled && (
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon-sm"
+          onClick={() => setOpen(true)}
+          aria-label={`Excluir ${itemLabel}`}
+        >
+          <Trash2 className="size-4 text-destructive" />
+        </Button>
+      )}
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Excluir {itemLabel}?</DialogTitle>

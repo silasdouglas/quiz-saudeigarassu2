@@ -36,10 +36,15 @@ interface Props {
   question?: Question;
   questionAnswer?: QuestionAnswer;
   categories: Category[];
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
-export function QuestionFormDialog({ question, questionAnswer, categories }: Props) {
-  const [open, setOpen] = useState(false);
+export function QuestionFormDialog({ question, questionAnswer, categories, open: controlledOpen, onOpenChange: controlledOnOpenChange }: Props) {
+  const isControlled = controlledOpen !== undefined;
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = isControlled ? controlledOpen : internalOpen;
+  const setOpen = isControlled ? (controlledOnOpenChange ?? (() => {})) : setInternalOpen;
   const action = question
     ? updateQuestion.bind(null, question.id)
     : createQuestion;
@@ -87,7 +92,7 @@ export function QuestionFormDialog({ question, questionAnswer, categories }: Pro
         setOpen(next);
       }}
     >
-      {question ? (
+      {!isControlled && (question ? (
         <Button
           type="button"
           variant="ghost"
@@ -102,7 +107,7 @@ export function QuestionFormDialog({ question, questionAnswer, categories }: Pro
           <Plus className="size-4" />
           Nova pergunta
         </Button>
-      )}
+      ))}
 
       <DialogContent className="gap-0 p-0 sm:max-w-3xl">
         <form action={formAction} className="flex max-h-[88vh] flex-col">
