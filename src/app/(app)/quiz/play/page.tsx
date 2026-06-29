@@ -95,6 +95,7 @@ export default async function QuizPlayPage() {
         profile.role === "admin" ||
         !q.target_role ||
         q.target_role === "ambos" ||
+        !profile.funcao ||
         q.target_role === profile.funcao
     )
     .sort((a, b) => DIFFICULTY_ORDER[a.difficulty] - DIFFICULTY_ORDER[b.difficulty]);

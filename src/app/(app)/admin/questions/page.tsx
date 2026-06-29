@@ -38,6 +38,19 @@ const DIFFICULTY_BADGE_CLASS: Record<Difficulty, string> = {
   dificil: "bg-red-500/10 text-red-600 border-red-200",
 };
 
+const TARGET_ROLE_LABEL: Record<string, string> = {
+  tecnico_enfermagem: "Técnico",
+  enfermeira: "Enfermeira",
+  ambos: "Ambos",
+};
+
+function formatWeekRange(weekStart: string): string {
+  const [year, month, day] = weekStart.split("-").map(Number);
+  const start = new Date(year, month - 1, day);
+  const end = new Date(year, month - 1, day + 6);
+  return `${start.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })} — ${end.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" })}`;
+}
+
 const PAGE_SIZE = 50;
 
 function getWeekStart(): string {
@@ -146,6 +159,7 @@ export default async function AdminQuestionsPage({
         question_text: string;
         difficulty: Difficulty;
         time_limit_seconds: number;
+        target_role?: string | null;
         categories: { name: string } | null;
       } | null;
     };
@@ -164,7 +178,7 @@ export default async function AdminQuestionsPage({
       const { data: sqData } = await supabase
         .from("schedule_questions")
         .select(
-          "question_id, questions(id, question_text, difficulty, time_limit_seconds, categories(name))"
+          "question_id, questions(id, question_text, difficulty, time_limit_seconds, target_role, categories(name))"
         )
         .eq("schedule_id", currentSchedule.id);
 
@@ -209,7 +223,7 @@ export default async function AdminQuestionsPage({
             <CalendarDays className="size-4 text-muted-foreground" />
             <h2 className="font-medium">
               Semana atual —{" "}
-              <span className="text-muted-foreground">{formatDate(weekStart)}</span>
+              <span className="text-muted-foreground">{formatWeekRange(weekStart)}</span>
             </h2>
           </div>
 
@@ -248,6 +262,7 @@ export default async function AdminQuestionsPage({
                       <TableHead>Pergunta</TableHead>
                       <TableHead>Categoria</TableHead>
                       <TableHead>Dificuldade</TableHead>
+                      <TableHead>Função</TableHead>
                       <TableHead>Tempo</TableHead>
                       <TableHead className="w-16 text-right">Remover</TableHead>
                     </TableRow>
@@ -273,6 +288,15 @@ export default async function AdminQuestionsPage({
                               {DIFFICULTY_LABEL[q.difficulty]}
                             </Badge>
                           </TableCell>
+                          <TableCell>
+                            {q.target_role ? (
+                              <Badge variant="outline" className="text-xs">
+                                {TARGET_ROLE_LABEL[q.target_role] ?? q.target_role}
+                              </Badge>
+                            ) : (
+                              <span className="text-xs text-muted-foreground">—</span>
+                            )}
+                          </TableCell>
                           <TableCell className="text-muted-foreground">
                             <span className="flex items-center gap-1">
                               <Clock className="size-3" />
@@ -292,7 +316,7 @@ export default async function AdminQuestionsPage({
                     })}
                     {scheduleQuestions.length === 0 && (
                       <TableRow>
-                        <TableCell colSpan={5} className="text-center text-muted-foreground">
+                        <TableCell colSpan={6} className="text-center text-muted-foreground">
                           Nenhuma pergunta agendada. Adicione perguntas acima.
                         </TableCell>
                       </TableRow>
@@ -533,6 +557,7 @@ export default async function AdminQuestionsPage({
                 <TableHead>Pergunta</TableHead>
                 <TableHead>Categoria</TableHead>
                 <TableHead>Dificuldade</TableHead>
+                <TableHead>Função</TableHead>
                 <TableHead>Tempo</TableHead>
                 <TableHead>Ativa</TableHead>
                 <TableHead className="w-20 text-right">Ações</TableHead>
@@ -557,6 +582,15 @@ export default async function AdminQuestionsPage({
                     <Badge variant="outline" className={DIFFICULTY_BADGE_CLASS[q.difficulty]}>
                       {DIFFICULTY_LABEL[q.difficulty]}
                     </Badge>
+                  </TableCell>
+                  <TableCell>
+                    {q.target_role ? (
+                      <Badge variant="outline" className="text-xs">
+                        {TARGET_ROLE_LABEL[q.target_role] ?? q.target_role}
+                      </Badge>
+                    ) : (
+                      <span className="text-xs text-muted-foreground">—</span>
+                    )}
                   </TableCell>
                   <TableCell className="text-muted-foreground">
                     {q.time_limit_seconds}s
@@ -583,7 +617,7 @@ export default async function AdminQuestionsPage({
               ))}
               {questions.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center text-muted-foreground">
+                  <TableCell colSpan={7} className="text-center text-muted-foreground">
                     Nenhuma pergunta encontrada.
                   </TableCell>
                 </TableRow>

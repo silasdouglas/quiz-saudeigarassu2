@@ -87,6 +87,7 @@ export function AddQuestionToScheduleDialog({ scheduleId, questions, neverSchedu
       <Button
         type="button"
         variant="outline"
+        size="sm"
         onClick={() => setOpen(true)}
         className="gap-2"
       >
