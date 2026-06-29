@@ -169,8 +169,8 @@ export function QuizRunner({
             setTabWarned(true);
           }
         })
-        .catch(() => {
-          // attempt may have just been finished server-side; ignore
+        .catch((err) => {
+          toast.error(`Erro ao registrar troca de aba: ${err?.message ?? "desconhecido"}`);
         });
     }
     document.addEventListener("visibilitychange", handleVisibility);
