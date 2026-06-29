@@ -25,6 +25,7 @@ import {
   type AdminAttemptRow,
 } from "@/app/(app)/admin/attempts/actions";
 import { useRealtimeTable } from "@/lib/hooks/use-realtime";
+import { computeWeekStart } from "@/lib/week";
 
 export type { AdminAttemptRow };
 
@@ -46,7 +47,7 @@ export function AttemptsList({ rows: initialRows }: { rows: AdminAttemptRow[] })
   const router = useRouter();
   const [rows, setRows] = useState(initialRows);
   const [query, setQuery] = useState("");
-  const [week, setWeek] = useState("all");
+  const [week, setWeek] = useState(computeWeekStart);
   const [, startTransition] = useTransition();
 
   const refresh = useCallback(() => {
