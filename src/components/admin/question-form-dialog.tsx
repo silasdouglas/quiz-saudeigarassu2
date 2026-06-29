@@ -291,6 +291,20 @@ export function QuestionFormDialog({ question, questionAnswer, categories, open:
               </div>
             </div>
 
+            <div className="space-y-1.5">
+              <Label htmlFor="source" className="text-sm font-semibold">
+                Fonte
+                <span className="ml-1.5 font-normal text-muted-foreground">(opcional)</span>
+              </Label>
+              <Input
+                id="source"
+                name="source"
+                defaultValue={question?.source ?? ""}
+                placeholder="Ex: Manual de Enfermagem, Cap. 3"
+                className="bg-card"
+              />
+            </div>
+
             <label
               htmlFor="active_check"
               className="flex cursor-pointer items-center gap-3 rounded-xl border p-3.5 transition-colors hover:bg-muted/40"

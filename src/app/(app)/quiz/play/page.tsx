@@ -49,7 +49,7 @@ export default async function QuizPlayPage() {
   const { data: rows } = await supabase
     .from("schedule_questions")
     .select(
-      "questions(id, question_text, option_a, option_b, option_c, option_d, difficulty, points, time_limit_seconds, target_role, categories(name))"
+      "questions(id, question_text, option_a, option_b, option_c, option_d, difficulty, points, time_limit_seconds, target_role, source, categories(name))"
     )
     .eq("schedule_id", schedule.id);
 
@@ -64,10 +64,11 @@ export default async function QuizPlayPage() {
     points: number;
     time_limit_seconds: number;
     target_role?: string;
+    source?: string;
     category_name?: string;
   };
 
-  type RawQuestion = QuestionRow & { categories?: { name: string } | null };
+  type RawQuestion = QuestionRow & { source?: string | null; categories?: { name: string } | null };
 
   const allQuestions = (rows ?? [])
     .map((row) => {
@@ -84,6 +85,7 @@ export default async function QuizPlayPage() {
         points: q.points,
         time_limit_seconds: q.time_limit_seconds,
         target_role: q.target_role ?? undefined,
+        source: q.source ?? undefined,
         category_name: q.categories?.name ?? undefined,
       } as QuestionRow;
     })

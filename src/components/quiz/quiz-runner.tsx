@@ -33,6 +33,7 @@ interface PlayQuestion {
   points: number;
   time_limit_seconds: number;
   target_role?: string;
+  source?: string;
   category_name?: string;
 }
 
@@ -361,9 +362,15 @@ export function QuizRunner({
           <CardTitle className="pt-2 text-lg leading-snug">
             {currentQuestion.question_text}
           </CardTitle>
-          <CardDescription className="sr-only">
-            Selecione uma alternativa
-          </CardDescription>
+          {currentQuestion.source ? (
+            <p className="mt-1 text-xs text-muted-foreground">
+              Fonte: {currentQuestion.source}
+            </p>
+          ) : (
+            <CardDescription className="sr-only">
+              Selecione uma alternativa
+            </CardDescription>
+          )}
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="grid gap-2">

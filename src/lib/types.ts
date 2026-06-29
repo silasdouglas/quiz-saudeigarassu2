@@ -31,6 +31,7 @@ export interface Question {
   time_limit_seconds: number;
   active: boolean;
   target_role?: 'tecnico' | 'enfermeira' | 'ambos';
+  source?: string | null;
   created_by: string | null;
   created_at: string;
   updated_at: string;
