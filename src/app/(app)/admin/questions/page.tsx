@@ -159,6 +159,7 @@ export default async function AdminQuestionsPage({
         id: string;
         question_text: string;
         difficulty: Difficulty;
+        points: number;
         time_limit_seconds: number;
         target_role?: string | null;
         option_a: string;
@@ -186,7 +187,7 @@ export default async function AdminQuestionsPage({
       const { data: sqData } = await supabase
         .from("schedule_questions")
         .select(
-          "question_id, questions(id, question_text, difficulty, time_limit_seconds, target_role, option_a, option_b, option_c, option_d, active, category_id, question_answers(correct_option), categories(name))"
+          "question_id, questions(id, question_text, difficulty, points, time_limit_seconds, target_role, option_a, option_b, option_c, option_d, active, category_id, question_answers(correct_option), categories(name))"
         )
         .eq("schedule_id", currentSchedule.id);
 
@@ -241,6 +242,11 @@ export default async function AdminQuestionsPage({
                 <p className="text-sm text-muted-foreground">
                   {scheduleQuestions.length}{" "}
                   {scheduleQuestions.length === 1 ? "pergunta" : "perguntas"} agendadas
+                  {scheduleQuestions.length > 0 && (
+                    <span className="ml-2 font-medium text-primary">
+                      · {scheduleQuestions.reduce((sum, sq) => sum + (sq.questions?.points ?? 0), 0)} pts
+                    </span>
+                  )}
                 </p>
                 <div className="flex gap-2">
                   <AddQuestionToScheduleDialog
