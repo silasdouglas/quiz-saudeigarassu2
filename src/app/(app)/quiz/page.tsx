@@ -97,7 +97,6 @@ export default async function QuizPage() {
         isAdmin ||
         !q.target_role ||
         q.target_role === "ambos" ||
-        !profile.funcao ||
         q.target_role === profile.funcao
       );
     });
