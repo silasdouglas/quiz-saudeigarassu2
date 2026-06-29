@@ -80,11 +80,12 @@ export default async function QuizPage() {
 
   let questionCount = 0;
   let estimatedSeconds = 0;
+  let maxPoints = 0;
 
   if (schedule) {
     const { data: rows } = await supabase
       .from("schedule_questions")
-      .select("questions(time_limit_seconds, target_role)")
+      .select("questions(time_limit_seconds, points, target_role)")
       .eq("schedule_id", schedule.id);
 
     // Match the play page: admins see every função, users only their own.
@@ -107,6 +108,10 @@ export default async function QuizPage() {
         | { time_limit_seconds: number }
         | null;
       return sum + (q?.time_limit_seconds ?? 60);
+    }, 0);
+    maxPoints = visible.reduce((sum, row) => {
+      const q = row.questions as unknown as { points?: number } | null;
+      return sum + (q?.points ?? 0);
     }, 0);
   }
 
@@ -154,6 +159,9 @@ export default async function QuizPage() {
             <p className="mt-0.5 text-sm text-muted-foreground">
               {questionCount} pergunta{questionCount !== 1 ? "s" : ""} de
               múltipla escolha — fácil (5 pts), média (10 pts), difícil (15 pts).
+              {maxPoints > 0 && (
+                <> Máximo desta semana: <span className="font-semibold text-foreground">{maxPoints} pts</span>.</>
+              )}
             </p>
           </div>
         </div>
