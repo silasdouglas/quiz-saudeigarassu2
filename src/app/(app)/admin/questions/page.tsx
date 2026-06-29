@@ -158,6 +158,7 @@ export default async function AdminQuestionsPage({
       time_limit_seconds: number;
       categories: { name: string } | null;
     }> = [];
+    let neverScheduledIds: string[] = [];
 
     if (currentSchedule) {
       const { data: sqData } = await supabase
@@ -179,6 +180,16 @@ export default async function AdminQuestionsPage({
       availableQuestions = (
         (allActive ?? []) as unknown as typeof availableQuestions
       ).filter((q) => !scheduledIds.has(q.id));
+
+      // Questions used in any previous schedule (not current)
+      const { data: prevUsed } = await supabase
+        .from("schedule_questions")
+        .select("question_id")
+        .neq("schedule_id", currentSchedule.id);
+      const prevUsedIds = new Set((prevUsed ?? []).map((r) => r.question_id));
+      neverScheduledIds = availableQuestions
+        .filter((q) => !prevUsedIds.has(q.id))
+        .map((q) => q.id);
     }
 
     const otherSchedules = (schedules ?? []).filter(
@@ -213,6 +224,7 @@ export default async function AdminQuestionsPage({
                   <AddQuestionToScheduleDialog
                     scheduleId={currentSchedule.id}
                     questions={availableQuestions}
+                    neverScheduledIds={neverScheduledIds}
                   />
                   {availableQuestions.length > 0 && (
                     <form action={syncAllToSchedule.bind(null, currentSchedule.id)}>

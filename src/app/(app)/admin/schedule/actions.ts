@@ -55,6 +55,53 @@ export async function deleteSchedule(scheduleId: string): Promise<void> {
   revalidatePath("/admin/schedule");
 }
 
+export async function addRandomQuestions(
+  scheduleId: string,
+  count: number
+): Promise<{ addedIds: string[] }> {
+  await requireAdmin();
+  const supabase = await createClient();
+
+  // Questions already in THIS schedule
+  const { data: currentScheduled } = await supabase
+    .from("schedule_questions")
+    .select("question_id")
+    .eq("schedule_id", scheduleId);
+  const currentIds = new Set((currentScheduled ?? []).map((r) => r.question_id));
+
+  // Questions used in ANY previous schedule
+  const { data: previouslyUsed } = await supabase
+    .from("schedule_questions")
+    .select("question_id")
+    .neq("schedule_id", scheduleId);
+  const previousIds = new Set((previouslyUsed ?? []).map((r) => r.question_id));
+
+  // Active questions not in current or previous schedules
+  const { data: allActive } = await supabase
+    .from("questions")
+    .select("id")
+    .eq("active", true);
+
+  const candidates = (allActive ?? [])
+    .map((q) => q.id)
+    .filter((id) => !currentIds.has(id) && !previousIds.has(id));
+
+  // Fisher-Yates shuffle then take N
+  for (let i = candidates.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
+  }
+  const toAdd = candidates.slice(0, count);
+  if (!toAdd.length) return { addedIds: [] };
+
+  await supabase
+    .from("schedule_questions")
+    .insert(toAdd.map((question_id) => ({ schedule_id: scheduleId, question_id })));
+
+  revalidatePath("/admin/questions");
+  return { addedIds: toAdd };
+}
+
 export async function syncAllToSchedule(scheduleId: string): Promise<void> {
   await requireAdmin();
   const supabase = await createClient();
