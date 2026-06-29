@@ -78,7 +78,7 @@ export function AddQuestionToScheduleDialog({ scheduleId, questions, neverSchedu
         Adicionar pergunta
       </Button>
 
-      <DialogContent className="flex max-h-[90vh] max-w-2xl flex-col">
+      <DialogContent className="flex max-h-[90vh] max-w-4xl flex-col">
         <DialogHeader>
           <DialogTitle>Adicionar pergunta</DialogTitle>
           <DialogDescription>
