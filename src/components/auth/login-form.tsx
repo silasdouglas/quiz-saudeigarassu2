@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useActionState } from "react";
-import { ArrowRight, Eye, EyeOff, Loader2, Lock, Mail } from "lucide-react";
+import { AlertCircle, ArrowRight, Eye, EyeOff, Loader2, Lock, Mail } from "lucide-react";
 import { login } from "@/app/login/actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,8 +13,8 @@ export function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
 
   return (
-    <form action={action} className="space-y-4">
-      <div className="space-y-2">
+    <form action={action} className="space-y-5">
+      <div className="space-y-1.5">
         <Label htmlFor="email">E-mail</Label>
         <div className="relative">
           <Mail className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -25,12 +25,12 @@ export function LoginForm() {
             autoComplete="email"
             required
             placeholder="seuemail@igarassu.pe.gov.br"
-            className="pl-9"
+            className="h-11 pl-9"
           />
         </div>
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-1.5">
         <Label htmlFor="password">Senha</Label>
         <div className="relative">
           <Lock className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -41,7 +41,7 @@ export function LoginForm() {
             autoComplete="current-password"
             required
             placeholder="••••••••"
-            className="pl-9 pr-10"
+            className="h-11 pl-9 pr-10"
           />
           <button
             type="button"
@@ -56,15 +56,16 @@ export function LoginForm() {
       </div>
 
       {state?.error && (
-        <p className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">
+        <div className="flex items-start gap-2.5 rounded-lg bg-destructive/10 px-3 py-2.5 text-sm text-destructive">
+          <AlertCircle className="mt-px size-4 shrink-0" />
           {state.error}
-        </p>
+        </div>
       )}
 
       <Button
         type="submit"
         size="lg"
-        className="group w-full gap-2"
+        className="group h-11 w-full gap-2"
         disabled={pending}
       >
         {pending ? (

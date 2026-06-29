@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
-import { CheckCircle2, Award, Stethoscope, Sparkles } from "lucide-react";
+import { CheckCircle2, Award, Stethoscope, Sparkles, Heart, Activity, Pill, Thermometer, ClipboardList, ShieldPlus } from "lucide-react";
 import { LoginForm } from "@/components/auth/login-form";
 
 export const metadata: Metadata = {
@@ -32,33 +32,28 @@ export default function LoginPage() {
           <div className="animate-login-blob absolute bottom-[-15%] left-[30%] size-72 rounded-full bg-lime-200/20 blur-3xl [animation-delay:-11s]" />
         </div>
 
-        {/* Subtle grid + faded icons */}
-        <div
-          className="pointer-events-none absolute inset-0 opacity-[0.07]"
-          style={{
-            backgroundImage:
-              "linear-gradient(white 1px, transparent 1px), linear-gradient(90deg, white 1px, transparent 1px)",
-            backgroundSize: "44px 44px",
-          }}
-        />
-        <div className="pointer-events-none absolute inset-0 select-none text-white/10">
+        {/* Faded icons */}
+        <div className="pointer-events-none absolute inset-0 select-none text-white/[0.09]">
           <Stethoscope className="absolute right-[6%] bottom-[16%] size-56 rotate-6" strokeWidth={1} />
           <Award className="absolute left-[6%] bottom-[10%] size-36 -rotate-6" strokeWidth={1} />
+          <Heart className="absolute left-[12%] top-[18%] size-28 rotate-12" strokeWidth={1} />
+          <Activity className="absolute right-[8%] top-[12%] size-32 -rotate-3" strokeWidth={1} />
+          <Pill className="absolute left-[40%] top-[8%] size-20 rotate-[25deg]" strokeWidth={1} />
+          <Thermometer className="absolute right-[30%] bottom-[28%] size-24 -rotate-12" strokeWidth={1} />
+          <ClipboardList className="absolute left-[4%] top-[44%] size-24 rotate-3" strokeWidth={1} />
+          <ShieldPlus className="absolute right-[18%] top-[38%] size-20 rotate-6" strokeWidth={1} />
         </div>
 
         {/* Content */}
-        <div className="relative z-10 flex items-center gap-4">
-          <div className="flex size-16 items-center justify-center rounded-2xl bg-white/15 p-2 ring-1 ring-white/25 backdrop-blur-sm">
-            <Image
-              src="/logo-mark.png"
-              alt="Prefeitura de Igarassu"
-              width={56}
-              height={56}
-              className="size-12 object-contain"
-              priority
-            />
-          </div>
-          <span className="text-xl font-bold text-white">Quiz Saúde Igarassu</span>
+        <div className="relative z-10">
+          <Image
+            src="/models/logo-prefeitura-branca.svg"
+            alt="Prefeitura de Igarassu"
+            width={72}
+            height={98}
+            className="object-contain"
+            priority
+          />
         </div>
 
         <div className="relative z-10">
@@ -102,7 +97,7 @@ export default function LoginPage() {
           <div className="absolute bottom-[-15%] left-[-10%] size-72 rounded-full bg-emerald-500/10 blur-3xl" />
         </div>
 
-        <div className="animate-login-rise relative z-10 w-full max-w-sm">
+        <div className="animate-login-rise relative z-10 w-full max-w-md">
           {/* Logo — mobile only */}
           <div className="mb-8 flex flex-col items-center lg:hidden">
             <div className="flex size-20 items-center justify-center rounded-2xl bg-primary/10 p-2 ring-1 ring-primary/15">
@@ -117,14 +112,14 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <div className="mb-8 text-center">
+          <div className="mb-7">
             <h1 className="text-2xl font-bold tracking-tight">Bem-vindo(a) de volta</h1>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Entre com suas credenciais para continuar
+            <p className="mt-1.5 text-sm text-muted-foreground">
+              Entre com suas credenciais para acessar a plataforma
             </p>
           </div>
 
-          <div className="rounded-3xl border bg-card/80 p-6 shadow-xl shadow-primary/5 backdrop-blur-sm sm:p-7">
+          <div className="rounded-2xl border bg-card p-8 shadow-sm">
             <LoginForm />
           </div>
 

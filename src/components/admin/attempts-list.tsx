@@ -129,6 +129,7 @@ export function AttemptsList({ rows }: { rows: AdminAttemptRow[] }) {
               {filtered.map((r) => (
                 <TableRow
                   key={r.attempt_id}
+                  onPointerEnter={() => router.prefetch(`/admin/attempts/${r.user_id}`)}
                   onClick={() => router.push(`/admin/attempts/${r.user_id}`)}
                   className="cursor-pointer"
                 >

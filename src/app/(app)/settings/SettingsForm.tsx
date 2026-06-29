@@ -94,7 +94,7 @@ export function SettingsForm({
               type="button"
               onClick={() => setSection(s.value)}
               className={cn(
-                "flex flex-1 cursor-pointer items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors sm:flex-none",
+                "flex flex-1 cursor-pointer items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm font-medium sm:flex-none",
                 section === s.value
                   ? "bg-primary/10 text-primary"
                   : "text-muted-foreground hover:bg-accent hover:text-foreground"
