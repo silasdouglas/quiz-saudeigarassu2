@@ -106,7 +106,7 @@ export default async function RankingPage({
             className={cn(
               "rounded-full px-3.5 py-1 text-xs font-semibold transition-colors",
               funcao === f.value
-                ? "bg-secondary text-secondary-foreground shadow-sm"
+                ? "bg-primary text-primary-foreground shadow-sm"
                 : "bg-muted text-muted-foreground hover:bg-muted/70"
             )}
           >
