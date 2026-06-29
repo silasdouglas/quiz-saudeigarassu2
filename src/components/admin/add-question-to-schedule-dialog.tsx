@@ -22,11 +22,20 @@ const DIFFICULTY_BADGE_CLASS: Record<Difficulty, string> = {
   dificil: "bg-red-500/10 text-red-600 border-red-200",
 };
 
+type TargetRole = "all" | "tecnico_enfermagem" | "enfermeira";
+
+const ROLE_LABELS: Record<TargetRole, string> = {
+  all: "Todos",
+  tecnico_enfermagem: "Técnicos",
+  enfermeira: "Enfermeiras",
+};
+
 interface AvailableQuestion {
   id: string;
   question_text: string;
   difficulty: Difficulty;
   time_limit_seconds: number;
+  target_role?: string | null;
   categories: { name: string } | null;
 }
 
@@ -41,10 +50,17 @@ export function AddQuestionToScheduleDialog({ scheduleId, questions, neverSchedu
   const [isPending, startTransition] = useTransition();
   const [addedIds, setAddedIds] = useState<Set<string>>(new Set());
   const [drawCount, setDrawCount] = useState(10);
+  const [drawRole, setDrawRole] = useState<TargetRole>("all");
 
   const freshSet = new Set(neverScheduledIds);
   const visibleQuestions = questions.filter((q) => !addedIds.has(q.id));
-  const freshAvailable = visibleQuestions.filter((q) => freshSet.has(q.id)).length;
+
+  const freshAvailable = visibleQuestions.filter((q) => {
+    if (!freshSet.has(q.id)) return false;
+    if (drawRole === "all") return true;
+    const role = q.target_role ?? "ambos";
+    return role === drawRole || role === "ambos";
+  }).length;
 
   function handleAdd(questionId: string) {
     startTransition(async () => {
@@ -55,7 +71,7 @@ export function AddQuestionToScheduleDialog({ scheduleId, questions, neverSchedu
 
   function handleRandom() {
     startTransition(async () => {
-      const { addedIds: newIds } = await addRandomQuestions(scheduleId, drawCount);
+      const { addedIds: newIds } = await addRandomQuestions(scheduleId, drawCount, drawRole);
       setAddedIds((prev) => new Set([...prev, ...newIds]));
     });
   }
@@ -87,7 +103,7 @@ export function AddQuestionToScheduleDialog({ scheduleId, questions, neverSchedu
         </DialogHeader>
 
         {/* Random draw toolbar */}
-        <div className="flex items-center gap-2 rounded-lg border bg-muted/40 px-4 py-3">
+        <div className="flex flex-wrap items-center gap-2 rounded-lg border bg-muted/40 px-4 py-3">
           <Shuffle className="size-4 shrink-0 text-muted-foreground" />
           <span className="text-sm font-medium">Sortear</span>
           <input
@@ -98,8 +114,18 @@ export function AddQuestionToScheduleDialog({ scheduleId, questions, neverSchedu
             onChange={(e) => setDrawCount(Math.max(1, parseInt(e.target.value) || 1))}
             className="h-8 w-16 rounded-md border border-input bg-background px-2 text-center text-sm outline-none focus:border-ring"
           />
+          <span className="text-sm text-muted-foreground">para</span>
+          <select
+            value={drawRole}
+            onChange={(e) => setDrawRole(e.target.value as TargetRole)}
+            className="h-8 cursor-pointer rounded-md border border-input bg-background px-2 text-sm outline-none focus:border-ring"
+          >
+            {(Object.keys(ROLE_LABELS) as TargetRole[]).map((r) => (
+              <option key={r} value={r}>{ROLE_LABELS[r]}</option>
+            ))}
+          </select>
           <span className="text-sm text-muted-foreground">
-            de <span className="font-medium text-foreground">{freshAvailable}</span> inéditas disponíveis
+            — <span className="font-medium text-foreground">{freshAvailable}</span> inéditas disponíveis
           </span>
           <Button
             type="button"

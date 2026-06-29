@@ -173,7 +173,7 @@ export default async function AdminQuestionsPage({
       const scheduledIds = new Set(scheduleQuestions.map((sq) => sq.question_id));
       const { data: allActive } = await supabase
         .from("questions")
-        .select("id, question_text, difficulty, time_limit_seconds, categories(name)")
+        .select("id, question_text, difficulty, time_limit_seconds, target_role, categories(name)")
         .eq("active", true)
         .order("created_at", { ascending: false });
 
