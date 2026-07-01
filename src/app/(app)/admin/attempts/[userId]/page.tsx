@@ -284,77 +284,73 @@ export default async function UserProfilePage({
               <UserCategoryChart data={chartData} />
             </CardContent>
           </Card>
-
-          {/* Attempts + gabarito */}
-          <Card className="lg:col-span-2">
-            <CardHeader>
-              <CardTitle className="text-base">Tentativas e gabarito</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {attempts.length === 0 ? (
-                <p className="text-sm text-muted-foreground">
-                  Nenhuma tentativa registrada.
-                </p>
-              ) : (
-                <div className="overflow-x-auto rounded-lg border">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Semana</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead className="text-right">Pontos</TableHead>
-                        <TableHead className="text-right">Acertos</TableHead>
-                        <TableHead className="text-right">Ações</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {attempts.map((a) => (
-                        <TableRow key={a.attempt_id}>
-                          <TableCell className="whitespace-nowrap text-sm">
-                            {formatWeek(a.week_start)}
-                          </TableCell>
-                          <TableCell>
-                            {a.status === "completed" ? (
-                              <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-200">
-                                Concluído
-                              </Badge>
-                            ) : a.status === "reset" ? (
-                              <Badge variant="outline" className="text-sky-600 border-sky-300">
-                                Pendente
-                              </Badge>
-                            ) : (
-                              <Badge variant="outline" className="text-amber-600 border-amber-300">
-                                Em andamento
-                              </Badge>
-                            )}
-                          </TableCell>
-                          <TableCell className="text-right font-semibold tabular-nums">
-                            {a.total_score}
-                          </TableCell>
-                          <TableCell className="text-right tabular-nums">
-                            {a.correct_count}/{a.answered_count}
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center justify-end gap-0.5">
-                              <AttemptAnswersDialog
-                                attemptId={a.attempt_id}
-                                userName={overview.full_name || overview.email}
-                              />
-                              <ResetAttemptButton
-                                attemptId={a.attempt_id}
-                                userName={overview.full_name || overview.email}
-                              />
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              )}
-            </CardContent>
-          </Card>
         </div>
+      )}
+
+      {/* Attempts + gabarito — always visible so admin can reset even penalized attempts */}
+      {attempts.length > 0 && (
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle className="text-base">Tentativas e gabarito</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto rounded-lg border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Semana</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Pontos</TableHead>
+                    <TableHead className="text-right">Acertos</TableHead>
+                    <TableHead className="text-right">Ações</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {attempts.map((a) => (
+                    <TableRow key={a.attempt_id}>
+                      <TableCell className="whitespace-nowrap text-sm">
+                        {formatWeek(a.week_start)}
+                      </TableCell>
+                      <TableCell>
+                        {a.status === "completed" ? (
+                          <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-200">
+                            Concluído
+                          </Badge>
+                        ) : a.status === "reset" ? (
+                          <Badge variant="outline" className="text-sky-600 border-sky-300">
+                            Pendente
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline" className="text-amber-600 border-amber-300">
+                            Em andamento
+                          </Badge>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-right font-semibold tabular-nums">
+                        {a.total_score}
+                      </TableCell>
+                      <TableCell className="text-right tabular-nums">
+                        {a.correct_count}/{a.answered_count}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center justify-end gap-0.5">
+                          <AttemptAnswersDialog
+                            attemptId={a.attempt_id}
+                            userName={overview.full_name || overview.email}
+                          />
+                          <ResetAttemptButton
+                            attemptId={a.attempt_id}
+                            userName={overview.full_name || overview.email}
+                          />
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+        </Card>
       )}
     </div>
   );

@@ -23,6 +23,9 @@ export async function login(
   });
 
   if (error) {
+    if (error.code === "email_not_confirmed") {
+      return { error: "Confirme seu e-mail antes de fazer login. Verifique sua caixa de entrada." };
+    }
     return { error: "E-mail ou senha inválidos." };
   }
 

@@ -18,7 +18,8 @@ export function RegisterForm() {
         <div>
           <p className="font-semibold text-foreground">Cadastro realizado com sucesso!</p>
           <p className="mt-1 text-sm text-muted-foreground">
-            Sua conta foi criada. Faça login para continuar.
+            Enviamos um link de confirmação para o seu e-mail.
+            Acesse sua caixa de entrada e confirme antes de fazer login.
           </p>
         </div>
         <Link
