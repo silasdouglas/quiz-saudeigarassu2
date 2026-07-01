@@ -31,8 +31,9 @@ export async function register(
     .from("profiles")
     .select("id")
     .eq("matricula", matricula)
-    .maybeSingle();
-  if (existingMatricula) return { error: "Esta matrícula já está cadastrada." };
+    .limit(1);
+  if (existingMatricula && existingMatricula.length > 0)
+    return { error: "Esta matrícula já está cadastrada." };
 
   const supabase = await createClient();
 
@@ -48,6 +49,13 @@ export async function register(
     if (error.code === "user_already_exists" || error.message?.includes("already registered")) {
       return { error: "Este e-mail já está cadastrado." };
     }
+    const { data: matriculaTakenNow } = await admin
+      .from("profiles")
+      .select("id")
+      .eq("matricula", matricula)
+      .limit(1);
+    if (matriculaTakenNow && matriculaTakenNow.length > 0)
+      return { error: "Esta matrícula já está cadastrada." };
     return { error: "Erro ao criar conta. Tente novamente." };
   }
 
