@@ -2,35 +2,13 @@
 
 import { useActionState } from "react";
 import { useState } from "react";
-import { Eye, EyeOff, CheckCircle2 } from "lucide-react";
-import Link from "next/link";
+import { Eye, EyeOff } from "lucide-react";
 import { register } from "@/app/cadastro/actions";
 
 export function RegisterForm() {
   const [state, action, pending] = useActionState(register, undefined);
   const [showPw, setShowPw] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
-
-  if (state?.success) {
-    return (
-      <div className="flex flex-col items-center gap-4 py-4 text-center">
-        <CheckCircle2 className="size-12 text-primary" />
-        <div>
-          <p className="font-semibold text-foreground">Cadastro realizado com sucesso!</p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Enviamos um link de confirmação para o seu e-mail.
-            Acesse sua caixa de entrada e confirme antes de fazer login.
-          </p>
-        </div>
-        <Link
-          href="/login"
-          className="mt-2 flex h-10 w-full items-center justify-center rounded-lg bg-primary text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
-        >
-          Ir para o login
-        </Link>
-      </div>
-    );
-  }
 
   return (
     <form action={action} className="flex flex-col gap-4">

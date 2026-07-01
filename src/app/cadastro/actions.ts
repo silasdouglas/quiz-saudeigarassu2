@@ -1,8 +1,9 @@
 "use server";
 
+import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
-export type RegisterState = { error?: string; success?: boolean } | undefined;
+export type RegisterState = { error?: string } | undefined;
 
 export async function register(
   _state: RegisterState,
@@ -47,5 +48,5 @@ export async function register(
     return { error: "Erro ao criar conta. Tente novamente." };
   }
 
-  return { success: true };
+  redirect("/");
 }
