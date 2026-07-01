@@ -3,12 +3,22 @@
 import { useActionState } from "react";
 import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
-import { register } from "@/app/cadastro/actions";
+import { register, type RegisterField } from "@/app/cadastro/actions";
+
+const BASE_INPUT =
+  "flex h-10 w-full rounded-lg border bg-background px-3 py-2 text-sm outline-none ring-offset-background transition-colors placeholder:text-muted-foreground focus-visible:ring-2";
+const NORMAL_INPUT = "border-input focus-visible:border-ring focus-visible:ring-ring/25";
+const ERROR_INPUT =
+  "border-destructive focus-visible:border-destructive focus-visible:ring-destructive/25";
 
 export function RegisterForm() {
   const [state, action, pending] = useActionState(register, undefined);
   const [showPw, setShowPw] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+
+  const errField = state?.field;
+  const inputCls = (name: RegisterField, extra = "") =>
+    `${BASE_INPUT} ${errField === name ? ERROR_INPUT : NORMAL_INPUT} ${extra}`.trim();
 
   return (
     <form action={action} className="flex flex-col gap-4">
@@ -23,8 +33,12 @@ export function RegisterForm() {
           autoComplete="name"
           required
           placeholder="Maria da Silva"
-          className="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none ring-offset-background transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/25"
+          aria-invalid={errField === "full_name"}
+          className={inputCls("full_name")}
         />
+        {errField === "full_name" && (
+          <p className="text-sm text-destructive">{state?.error}</p>
+        )}
       </div>
 
       <div className="flex flex-col gap-1.5">
@@ -37,8 +51,12 @@ export function RegisterForm() {
           type="text"
           required
           placeholder="000000"
-          className="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none ring-offset-background transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/25"
+          aria-invalid={errField === "matricula"}
+          className={inputCls("matricula")}
         />
+        {errField === "matricula" && (
+          <p className="text-sm text-destructive">{state?.error}</p>
+        )}
       </div>
 
       <div className="flex flex-col gap-1.5">
@@ -50,12 +68,16 @@ export function RegisterForm() {
           name="funcao"
           required
           defaultValue=""
-          className="flex h-10 w-full cursor-pointer rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none ring-offset-background transition-colors focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/25"
+          aria-invalid={errField === "funcao"}
+          className={inputCls("funcao", "cursor-pointer")}
         >
           <option value="" disabled>Selecione sua função</option>
           <option value="tecnico">Técnico de Enfermagem</option>
           <option value="enfermeira">Enfermeira(o)</option>
         </select>
+        {errField === "funcao" && (
+          <p className="text-sm text-destructive">{state?.error}</p>
+        )}
       </div>
 
       <div className="flex flex-col gap-1.5">
@@ -69,8 +91,12 @@ export function RegisterForm() {
           autoComplete="email"
           required
           placeholder="seuemail@igarassu.pe.gov.br"
-          className="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none ring-offset-background transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/25"
+          aria-invalid={errField === "email"}
+          className={inputCls("email")}
         />
+        {errField === "email" && (
+          <p className="text-sm text-destructive">{state?.error}</p>
+        )}
       </div>
 
       <div className="flex flex-col gap-1.5">
@@ -85,7 +111,8 @@ export function RegisterForm() {
             autoComplete="new-password"
             required
             placeholder="Mínimo 6 caracteres"
-            className="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 pr-10 text-sm outline-none ring-offset-background transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/25"
+            aria-invalid={errField === "password"}
+            className={inputCls("password", "pr-10")}
           />
           <button
             type="button"
@@ -95,6 +122,9 @@ export function RegisterForm() {
             {showPw ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
           </button>
         </div>
+        {errField === "password" && (
+          <p className="text-sm text-destructive">{state?.error}</p>
+        )}
       </div>
 
       <div className="flex flex-col gap-1.5">
@@ -109,7 +139,8 @@ export function RegisterForm() {
             autoComplete="new-password"
             required
             placeholder="Repita a senha"
-            className="flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 pr-10 text-sm outline-none ring-offset-background transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/25"
+            aria-invalid={errField === "confirm_password"}
+            className={inputCls("confirm_password", "pr-10")}
           />
           <button
             type="button"
@@ -119,9 +150,12 @@ export function RegisterForm() {
             {showConfirm ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
           </button>
         </div>
+        {errField === "confirm_password" && (
+          <p className="text-sm text-destructive">{state?.error}</p>
+        )}
       </div>
 
-      {state?.error && (
+      {state?.error && !errField && (
         <p className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">
           {state.error}
         </p>
