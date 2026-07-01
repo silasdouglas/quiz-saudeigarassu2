@@ -12,9 +12,11 @@ export const getCurrentProfile = cache(async (): Promise<Profile | null> => {
   } = await supabase.auth.getUser();
   if (!user) return null;
 
+  // email is not selectable from profiles by authenticated users (PII hardening,
+  // migration 0026); the user's own email comes from the auth session instead.
   const { data: profile } = await supabase
     .from("profiles")
-    .select("id, email, full_name, role, funcao, created_at, avatar_url")
+    .select("id, full_name, role, funcao, created_at, avatar_url")
     .eq("id", user.id)
     .single();
 
@@ -24,7 +26,7 @@ export const getCurrentProfile = cache(async (): Promise<Profile | null> => {
     return null;
   }
 
-  return profile as Profile;
+  return { ...profile, email: user.email ?? "" } as Profile;
 });
 
 export async function requireUser(): Promise<Profile> {
