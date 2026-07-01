@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export type RegisterState = { error?: string } | undefined;
 
@@ -23,15 +24,17 @@ export async function register(
   if (password.length < 6) return { error: "A senha deve ter no mínimo 6 caracteres." };
   if (password !== confirmPassword) return { error: "As senhas não coincidem." };
 
-  const supabase = await createClient();
+  // Use service role to bypass RLS for uniqueness checks
+  const admin = createAdminClient();
 
-  // Check matricula uniqueness
-  const { data: existing } = await supabase
+  const { data: existingMatricula } = await admin
     .from("profiles")
     .select("id")
     .eq("matricula", matricula)
     .maybeSingle();
-  if (existing) return { error: "Esta matrícula já está cadastrada." };
+  if (existingMatricula) return { error: "Esta matrícula já está cadastrada." };
+
+  const supabase = await createClient();
 
   const { error } = await supabase.auth.signUp({
     email,
@@ -48,5 +51,8 @@ export async function register(
     return { error: "Erro ao criar conta. Tente novamente." };
   }
 
-  redirect("/");
+  // Sign out so the user must log in manually
+  await supabase.auth.signOut();
+
+  redirect("/login?cadastro=ok");
 }
