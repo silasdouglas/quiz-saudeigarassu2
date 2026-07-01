@@ -12,8 +12,15 @@ export type RegisterField =
   | "password"
   | "confirm_password";
 
+export type RegisterValues = {
+  full_name: string;
+  matricula: string;
+  funcao: string;
+  email: string;
+};
+
 export type RegisterState =
-  | { error?: string; field?: RegisterField }
+  | { error?: string; field?: RegisterField; values?: RegisterValues }
   | undefined;
 
 export async function register(
@@ -27,12 +34,14 @@ export async function register(
   const password = String(formData.get("password") ?? "");
   const confirmPassword = String(formData.get("confirm_password") ?? "");
 
-  if (!fullName) return { error: "Informe seu nome completo.", field: "full_name" };
-  if (!matricula) return { error: "Informe sua matrícula.", field: "matricula" };
-  if (!funcao || !['tecnico', 'enfermeira'].includes(funcao)) return { error: "Selecione sua função.", field: "funcao" };
-  if (!email) return { error: "Informe seu e-mail.", field: "email" };
-  if (password.length < 6) return { error: "A senha deve ter no mínimo 6 caracteres.", field: "password" };
-  if (password !== confirmPassword) return { error: "As senhas não coincidem.", field: "confirm_password" };
+  const values: RegisterValues = { full_name: fullName, matricula, funcao, email };
+
+  if (!fullName) return { error: "Informe seu nome completo.", field: "full_name", values };
+  if (!matricula) return { error: "Informe sua matrícula.", field: "matricula", values };
+  if (!funcao || !['tecnico', 'enfermeira'].includes(funcao)) return { error: "Selecione sua função.", field: "funcao", values };
+  if (!email) return { error: "Informe seu e-mail.", field: "email", values };
+  if (password.length < 6) return { error: "A senha deve ter no mínimo 6 caracteres.", field: "password", values };
+  if (password !== confirmPassword) return { error: "As senhas não coincidem.", field: "confirm_password", values };
 
   // Use service role to bypass RLS for uniqueness checks
   const admin = createAdminClient();
@@ -43,7 +52,7 @@ export async function register(
     .eq("matricula", matricula)
     .limit(1);
   if (existingMatricula && existingMatricula.length > 0)
-    return { error: "Esta matrícula já está cadastrada.", field: "matricula" };
+    return { error: "Esta matrícula já está cadastrada.", field: "matricula", values };
 
   const supabase = await createClient();
 
@@ -57,7 +66,7 @@ export async function register(
 
   if (error) {
     if (error.code === "user_already_exists" || error.message?.includes("already registered")) {
-      return { error: "Este e-mail já está cadastrado.", field: "email" };
+      return { error: "Este e-mail já está cadastrado.", field: "email", values };
     }
     const { data: matriculaTakenNow } = await admin
       .from("profiles")
@@ -65,8 +74,8 @@ export async function register(
       .eq("matricula", matricula)
       .limit(1);
     if (matriculaTakenNow && matriculaTakenNow.length > 0)
-      return { error: "Esta matrícula já está cadastrada.", field: "matricula" };
-    return { error: "Erro ao criar conta. Tente novamente." };
+      return { error: "Esta matrícula já está cadastrada.", field: "matricula", values };
+    return { error: "Erro ao criar conta. Tente novamente.", values };
   }
 
   // Sign out so the user must log in manually

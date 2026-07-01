@@ -33,6 +33,7 @@ export function RegisterForm() {
           autoComplete="name"
           required
           placeholder="Maria da Silva"
+          defaultValue={state?.values?.full_name}
           aria-invalid={errField === "full_name"}
           className={inputCls("full_name")}
         />
@@ -51,6 +52,7 @@ export function RegisterForm() {
           type="text"
           required
           placeholder="000000"
+          defaultValue={state?.values?.matricula}
           aria-invalid={errField === "matricula"}
           className={inputCls("matricula")}
         />
@@ -67,7 +69,7 @@ export function RegisterForm() {
           id="funcao"
           name="funcao"
           required
-          defaultValue=""
+          defaultValue={state?.values?.funcao ?? ""}
           aria-invalid={errField === "funcao"}
           className={inputCls("funcao", "cursor-pointer")}
         >
@@ -91,6 +93,7 @@ export function RegisterForm() {
           autoComplete="email"
           required
           placeholder="seuemail@igarassu.pe.gov.br"
+          defaultValue={state?.values?.email}
           aria-invalid={errField === "email"}
           className={inputCls("email")}
         />
